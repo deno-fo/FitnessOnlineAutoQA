@@ -1,4 +1,4 @@
-package tests;
+package tests.android;
 
 import annotations.RequiresGoogleHealth;
 import io.appium.java_client.android.AndroidDriver;
@@ -15,7 +15,7 @@ import java.net.URL;
 
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-public class BaseAndroidTest {
+public abstract class BaseAndroidTest {
 
     protected AndroidDriver driver;
     protected boolean healthConnectAvailable;

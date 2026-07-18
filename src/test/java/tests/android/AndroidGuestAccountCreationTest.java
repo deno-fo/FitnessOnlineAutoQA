@@ -1,4 +1,4 @@
-package tests;
+package tests.android;
 
 import annotations.RequiresGoogleHealth;
 import components.android.AndroidNotificationPermissionDialog;
@@ -7,21 +7,21 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pages.android.BodyParametersPage;
-import pages.android.EmailRegistrationPage;
+import pages.android.GenderSelectionPage;
 import pages.android.GoogleHealthPage;
 import pages.android.HealthPermissionsPage;
 import pages.android.LoginPage;
 import pages.android.MainPage;
-import utils.TestData;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class AndroidUserRegistrationTest extends BaseAndroidTest {
+public class AndroidGuestAccountCreationTest extends BaseAndroidTest {
 
     private LoginPage loginPage;
-    private EmailRegistrationPage emailRegistrationPage;
-    private GoogleHealthPage googleHealthPage;
     private HealthPermissionsPage healthPermissionsPage;
+    private GoogleHealthPage googleHealthPage;
+    private GenderSelectionPage genderSelectionPage;
     private BodyParametersPage bodyParametersPage;
     private AndroidNotificationPermissionDialog notificationPermissionDialog;
     private MainPage mainPage;
@@ -30,9 +30,9 @@ public class AndroidUserRegistrationTest extends BaseAndroidTest {
     @BeforeEach
     public void createPages() {
         loginPage = new LoginPage(driver);
-        emailRegistrationPage = new EmailRegistrationPage(driver);
-        googleHealthPage = new GoogleHealthPage(driver);
         healthPermissionsPage = new HealthPermissionsPage(driver);
+        googleHealthPage = new GoogleHealthPage(driver);
+        genderSelectionPage = new GenderSelectionPage(driver);
         bodyParametersPage = new BodyParametersPage(driver);
         notificationPermissionDialog =
                 new AndroidNotificationPermissionDialog(driver);
@@ -42,80 +42,64 @@ public class AndroidUserRegistrationTest extends BaseAndroidTest {
 
     @Test
     @RequiresGoogleHealth
-    public void shouldRegisterUserWithGoogleHealth() {
-        openEmailRegistrationForm();
-
-        emailRegistrationPage.registerMaleUser(
-                TestData.uniqueEmail(),
-                TestData.PASSWORD,
-                TestData.NAME,
-                TestData.SURNAME
-        );
+    public void shouldCompleteGuestOnboardingWithGoogleHealth() {
+        loginPage.enterGuestMode();
 
         googleHealthPage.grantAccess();
         healthPermissionsPage.enableAllowAll();
         healthPermissionsPage.confirmHealthPermissions();
 
-        completeOnboarding();
+        completeOnboardingWithDefaultUserData();
 
-        assertRegisteredUserHomeOpened();
+        assertGuestHomeScreenOpened();
     }
 
     @Test
-    public void shouldRegisterUserAfterSkippingGoogleHealthInApp() {
-        openEmailRegistrationForm();
-
-        emailRegistrationPage.registerMaleUser(
-                TestData.uniqueEmail(),
-                TestData.PASSWORD,
-                TestData.NAME,
-                TestData.SURNAME
-        );
+    public void shouldCompleteGuestOnboardingAfterSkippingGoogleHealthInApp() {
+        loginPage.enterGuestMode();
 
         googleHealthPage.skipAccess();
         googleHealthPage.declinePersuasion();
         googleHealthPage.continueWithoutAccess();
 
-        completeOnboarding();
+        completeOnboardingWithDefaultUserData();
 
-        assertRegisteredUserHomeOpened();
+        assertGuestHomeScreenOpened();
     }
 
     @Test
     @RequiresGoogleHealth
-    public void shouldRegisterUserAfterDenyingGoogleHealthInSystemDialog() {
-        openEmailRegistrationForm();
-
-        emailRegistrationPage.registerMaleUser(
-                TestData.uniqueEmail(),
-                TestData.PASSWORD,
-                TestData.NAME,
-                TestData.SURNAME
-        );
+    public void shouldCompleteGuestOnboardingAfterDenyingGoogleHealthInSystemDialog() {
+        loginPage.enterGuestMode();
 
         googleHealthPage.grantAccess();
         healthPermissionsPage.denyAccess();
         googleHealthPage.continueWithoutAccess();
 
-        completeOnboarding();
+        completeOnboardingWithDefaultUserData();
 
-        assertRegisteredUserHomeOpened();
+        assertGuestHomeScreenOpened();
     }
 
-    private void openEmailRegistrationForm() {
-        loginPage.skipWelcomeScreen();
-        loginPage.openEmailAuthentication();
-    }
-
-    private void completeOnboarding() {
+    private void completeOnboardingWithDefaultUserData() {
+        genderSelectionPage.selectMale();
         bodyParametersPage.continueWithDefaultValues();
         notificationPermissionDialog.allowNotifications();
     }
 
-    private void assertRegisteredUserHomeOpened() {
-        assertTrue(
-                mainPage.isBottomNavigationDisplayed(),
-                "Registered user creation failed: main screen was not opened."
+    private void assertGuestHomeScreenOpened() {
+        assertAll(
+                "Guest onboarding verification",
+
+                () -> assertTrue(
+                        mainPage.isBottomNavigationDisplayed(),
+                        "Bottom navigation is not displayed."
+                ),
+
+                () -> assertTrue(
+                        mainPage.isWorkoutProgramsListDisplayed(),
+                        "Workout programs list is not displayed."
+                )
         );
     }
 

@@ -1,4 +1,4 @@
-package tests;
+package tests.android;
 
 import annotations.RequiresGoogleHealth;
 import components.android.AndroidNotificationPermissionDialog;

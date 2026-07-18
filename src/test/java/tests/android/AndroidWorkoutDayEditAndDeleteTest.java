@@ -1,4 +1,4 @@
-package tests;
+package tests.android;
 
 import org.junit.jupiter.api.Test;
 import utils.TestData;

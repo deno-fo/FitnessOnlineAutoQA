@@ -1,4 +1,4 @@
-package tests;
+package tests.android;
 
 import components.android.AndroidNotificationPermissionDialog;
 import components.android.TutorialOverlay;

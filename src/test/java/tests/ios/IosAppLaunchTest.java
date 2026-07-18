@@ -1,4 +1,4 @@
-package tests;
+package tests.ios;
 
 import io.appium.java_client.appmanagement.ApplicationState;
 import org.junit.jupiter.api.Test;
