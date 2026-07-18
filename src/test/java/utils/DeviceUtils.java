@@ -4,11 +4,50 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class DeviceUtils {
 
     private static final String ADB_PATH =
-            "/Users/admin/Library/Android/sdk/platform-tools/adb";
+            resolveAdbPath();
+
+    private static String resolveAdbPath() {
+        String executableName =
+                isWindows() ? "adb.exe" : "adb";
+
+        for (String environmentVariable :
+                List.of("ANDROID_HOME", "ANDROID_SDK_ROOT")) {
+
+            String sdkRoot =
+                    System.getenv(environmentVariable);
+
+            if (sdkRoot == null || sdkRoot.isBlank()) {
+                continue;
+            }
+
+            Path adbPath = Path.of(
+                    sdkRoot,
+                    "platform-tools",
+                    executableName
+            );
+
+            if (Files.isRegularFile(adbPath)) {
+                return adbPath.toString();
+            }
+        }
+
+        /*
+         * If neither SDK variable points to adb,
+         * let the operating system search for it in PATH.
+         */
+        return executableName;
+    }
+
+    private static boolean isWindows() {
+        return System.getProperty("os.name")
+                .startsWith("Windows");
+    }
 
     private DeviceUtils() {
     }
