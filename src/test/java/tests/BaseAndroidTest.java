@@ -26,6 +26,7 @@ public class BaseAndroidTest {
 
         String deviceUdid =
                 DeviceUtils.getSingleConnectedDeviceUdid();
+        ensureFitnessOnlineIsInstalled(deviceUdid);
 
         healthConnectAvailable =
                 DeviceUtils.isHealthConnectAvailable(
@@ -78,6 +79,25 @@ public class BaseAndroidTest {
         driver = new AndroidDriver(
                 new URL(AppiumConfig.SERVER_URL),
                 options
+        );
+    }
+
+    private static void ensureFitnessOnlineIsInstalled(
+            String deviceUdid
+    ) throws IOException, InterruptedException {
+
+        if (DeviceUtils.isPackageInstalled(
+                deviceUdid,
+                AndroidConfig.APP_PACKAGE
+        )) {
+            return;
+        }
+
+        throw new IllegalStateException(
+                "FitnessOnline is not installed on Android device "
+                        + deviceUdid
+                        + ". Expected package: "
+                        + AndroidConfig.APP_PACKAGE
         );
     }
 
