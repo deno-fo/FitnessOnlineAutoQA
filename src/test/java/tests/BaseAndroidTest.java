@@ -24,6 +24,8 @@ public class BaseAndroidTest {
     public void setUp(TestInfo testInfo)
             throws IOException, InterruptedException {
 
+        AppiumConfig.ensureServerIsAvailable();
+
         String deviceUdid =
                 DeviceUtils.getSingleConnectedDeviceUdid();
         ensureFitnessOnlineIsInstalled(deviceUdid);
