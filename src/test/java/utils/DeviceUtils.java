@@ -2,10 +2,11 @@ package utils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class DeviceUtils {
 
@@ -49,18 +50,37 @@ public class DeviceUtils {
                 .startsWith("Windows");
     }
 
+    private static Process startAdb(
+            String... arguments
+    ) {
+        List<String> command = new ArrayList<>();
+
+        command.add(ADB_PATH);
+        command.addAll(List.of(arguments));
+
+        try {
+            return new ProcessBuilder(command)
+                    .redirectErrorStream(true)
+                    .start();
+        } catch (IOException exception) {
+            throw new IllegalStateException(
+                    "Could not start adb. Resolved command: "
+                            + ADB_PATH
+                            + ". Configure ANDROID_HOME or "
+                            + "ANDROID_SDK_ROOT, or add adb to PATH.",
+                    exception
+            );
+        }
+    }
+
     private DeviceUtils() {
     }
 
     public static String getSingleConnectedDeviceUdid()
             throws IOException, InterruptedException {
 
-        Process process = new ProcessBuilder(
-                ADB_PATH,
-                "devices"
-        )
-                .redirectErrorStream(true)
-                .start();
+        Process process =
+                startAdb("devices");
 
         String output = new String(
                 process.getInputStream().readAllBytes(),
@@ -109,17 +129,14 @@ public class DeviceUtils {
             String appPackage
     ) throws IOException, InterruptedException {
 
-        Process process = new ProcessBuilder(
-                ADB_PATH,
+        Process process = startAdb(
                 "-s",
                 deviceUdid,
                 "shell",
                 "pm",
                 "clear",
                 appPackage
-        )
-                .redirectErrorStream(true)
-                .start();
+        );
 
         String output = new String(
                 process.getInputStream().readAllBytes(),
@@ -140,16 +157,13 @@ public class DeviceUtils {
             String deviceUdid
     ) throws IOException, InterruptedException {
 
-        Process process = new ProcessBuilder(
-                ADB_PATH,
+        Process process = startAdb(
                 "-s",
                 deviceUdid,
                 "shell",
                 "getprop",
                 "ro.build.version.sdk"
-        )
-                .redirectErrorStream(true)
-                .start();
+        );
 
         String output = new String(
                 process.getInputStream().readAllBytes(),
@@ -164,6 +178,7 @@ public class DeviceUtils {
                             + output
             );
         }
+
         return Integer.parseInt(output);
     }
 
@@ -172,17 +187,14 @@ public class DeviceUtils {
             String packageName
     ) throws IOException, InterruptedException {
 
-        Process process = new ProcessBuilder(
-                ADB_PATH,
+        Process process = startAdb(
                 "-s",
                 deviceUdid,
                 "shell",
                 "pm",
                 "path",
                 packageName
-        )
-                .redirectErrorStream(true)
-                .start();
+        );
 
         String output = new String(
                 process.getInputStream().readAllBytes(),
