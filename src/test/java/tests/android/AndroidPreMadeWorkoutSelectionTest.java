@@ -41,8 +41,7 @@ public class AndroidPreMadeWorkoutSelectionTest extends BaseAndroidTest {
     }
 
     @Test
-    public void shouldSelectPreMadeWorkoutForNewUser()
-            throws InterruptedException {
+    public void shouldSelectPreMadeWorkoutForNewUser() {
 
         loginPage.skipWelcomeScreen();
         loginPage.openEmailAuthentication();
@@ -75,7 +74,8 @@ public class AndroidPreMadeWorkoutSelectionTest extends BaseAndroidTest {
     public void cleanUpCreatedAccount()
             throws InterruptedException {
 
-        if (accountDeletionFlow.canDeleteAccount()) {
+        if (accountDeletionFlow != null
+                && accountDeletionFlow.canDeleteAccount()) {
             accountDeletionFlow.deleteAccount();
         }
     }

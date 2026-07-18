@@ -169,7 +169,8 @@ public class AndroidWorkoutDayEditAndDeleteTest
     public void cleanUpCreatedAccount()
             throws InterruptedException {
 
-        if (accountDeletionFlow.canDeleteAccount()) {
+        if (accountDeletionFlow != null
+                && accountDeletionFlow.canDeleteAccount()) {
             accountDeletionFlow.deleteAccount();
         }
     }
