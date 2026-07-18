@@ -13,7 +13,7 @@ import utils.DeviceUtils;
 import java.io.IOException;
 import java.net.URL;
 
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class BaseAndroidTest {
 
@@ -42,8 +42,9 @@ public class BaseAndroidTest {
                         ))
                         .orElse(false);
 
-        if (googleHealthRequired && !healthConnectAvailable) {
-            fail(
+        if (googleHealthRequired) {
+            assumeTrue(
+                    healthConnectAvailable,
                     "Google Health is required for this test, "
                             + "but it is not available on this device. "
                             + "Android API level is below 34 and "
