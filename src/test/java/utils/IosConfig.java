@@ -12,7 +12,7 @@ public final class IosConfig {
             "com.aiti.FitnessOnline";
 
     public static final String TEAM_ID =
-            "D62CAUHV53";
+            "XH62Y52YY8";
 
     public static final String WDA_BUNDLE_ID =
             "com.aiti.FitnessOnline.WebDriverAgent";

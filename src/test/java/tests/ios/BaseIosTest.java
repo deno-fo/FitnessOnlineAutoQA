@@ -40,6 +40,11 @@ public abstract class BaseIosTest {
                 "Apple Development"
         );
 
+        options.setCapability(
+                "appium:allowProvisioningDeviceRegistration",
+                true
+        );
+
         options.setUpdatedWdaBundleId(
                 IosConfig.WDA_BUNDLE_ID
         );
