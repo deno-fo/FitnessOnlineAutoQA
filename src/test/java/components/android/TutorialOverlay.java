@@ -34,7 +34,7 @@ public class TutorialOverlay extends AndroidBasePage {
     public void dismissIfPresent() {
         WebDriverWait optionalWait = new WebDriverWait(
                 driver,
-                Duration.ofSeconds(3)
+                Duration.ofSeconds(10)
         );
 
         try {

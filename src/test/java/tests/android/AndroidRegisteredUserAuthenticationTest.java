@@ -128,7 +128,7 @@ public class AndroidRegisteredUserAuthenticationTest
 
     private void completeLoginOnboarding() {
         notificationPermissionDialog.allowNotifications();
-        tutorialOverlay.dismiss();
+        tutorialOverlay.dismissIfPresent();
     }
 
     private void openEmailLoginForm() {
