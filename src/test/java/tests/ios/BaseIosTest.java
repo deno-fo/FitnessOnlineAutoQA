@@ -4,10 +4,11 @@ import io.appium.java_client.ios.IOSDriver;
 import io.appium.java_client.ios.options.XCUITestOptions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import utils.IosConfig;
 import utils.AppiumConfig;
+import utils.IosConfig;
+import utils.IosDeviceUtils;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.net.URL;
 
 public abstract class BaseIosTest {
@@ -15,15 +16,22 @@ public abstract class BaseIosTest {
     protected IOSDriver driver;
 
     @BeforeEach
-    public void setUp() throws MalformedURLException {
+    public void setUp()
+            throws IOException, InterruptedException {
+
+        AppiumConfig.ensureServerIsAvailable();
+
+        IosDeviceUtils.IosDevice device =
+                IosDeviceUtils.getSingleConnectedIphone();
+
         XCUITestOptions options = new XCUITestOptions();
 
         options.setDeviceName(
-                IosConfig.DEVICE_NAME
+                device.name()
         );
 
         options.setUdid(
-                IosConfig.UDID
+                device.udid()
         );
 
         options.setBundleId(
