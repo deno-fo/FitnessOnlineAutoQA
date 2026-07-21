@@ -1,9 +1,13 @@
 package tests.ios;
 
+import flows.IosLogoutFlow;
+import flows.IosPostLoginFlow;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import pages.ios.EmailAuthPage;
 import pages.ios.LoginPage;
+import pages.ios.MainPage;
 import utils.TestData;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -13,11 +17,41 @@ public class IosRegisteredUserAuthenticationTest
 
     private LoginPage loginPage;
     private EmailAuthPage emailAuthPage;
+    private IosPostLoginFlow postLoginFlow;
+    private MainPage mainPage;
+    private IosLogoutFlow logoutFlow;
+
+    private boolean userLoggedIn;
 
     @BeforeEach
     public void createPages() {
         loginPage = new LoginPage(driver);
         emailAuthPage = new EmailAuthPage(driver);
+        postLoginFlow = new IosPostLoginFlow(driver);
+        mainPage = new MainPage(driver);
+        logoutFlow = new IosLogoutFlow(driver);
+
+        userLoggedIn = false;
+    }
+
+    @Test
+    public void shouldSignInRegisteredUser() {
+        loginPage.openEmailAuthentication();
+
+        emailAuthPage.signIn(
+                TestData.REGISTERED_USER_EMAIL,
+                TestData.REGISTERED_USER_PASSWORD
+        );
+
+        postLoginFlow.complete();
+
+        assertTrue(
+                mainPage.isOpened(),
+                "Registered user login failed: "
+                        + "main screen was not opened."
+        );
+
+        userLoggedIn = true;
     }
 
     @Test
@@ -35,5 +69,24 @@ public class IosRegisteredUserAuthenticationTest
                 "Invalid credentials verification failed: "
                         + "expected login error was not displayed."
         );
+    }
+
+    @AfterEach
+    public void restoreAuthenticationState() {
+        if (userLoggedIn) {
+            logoutFlow.logOut();
+
+            assertTrue(
+                    loginPage
+                            .isEmailAuthenticationOptionDisplayed(),
+                    "Registered user logout failed: "
+                            + "authentication options screen was not opened."
+            );
+
+            return;
+        }
+
+        emailAuthPage
+                .dismissInvalidCredentialsMessageIfPresent();
     }
 }

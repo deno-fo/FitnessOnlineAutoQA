@@ -19,33 +19,48 @@ public class LoginPage extends IosBasePage {
                             + "AND name == 'Sign in/Sign up with email'"
             );
 
+    private final By emailAuthenticationForm =
+            AppiumBy.accessibilityId("Sign in");
+
     public LoginPage(IOSDriver driver) {
         super(driver);
     }
 
     public void openEmailAuthentication() {
-        if (!driver.findElements(welcomeSkipButton).isEmpty()) {
+        wait.until(currentDriver ->
+                isPresent(welcomeSkipButton)
+                        || isPresent(emailAuthenticationButton)
+                        || isPresent(emailAuthenticationForm)
+        );
+
+        if (isPresent(emailAuthenticationForm)) {
+            return;
+        }
+
+        if (isPresent(welcomeSkipButton)) {
             wait.until(
                     ExpectedConditions.elementToBeClickable(
                             welcomeSkipButton
                     )
             ).click();
-
-            wait.until(
-                    ExpectedConditions.elementToBeClickable(
-                            emailAuthenticationButton
-                    )
-            ).click();
-
-            return;
         }
 
-        if (!driver.findElements(emailAuthenticationButton).isEmpty()) {
-            wait.until(
-                    ExpectedConditions.elementToBeClickable(
-                            emailAuthenticationButton
-                    )
-            ).click();
-        }
+        wait.until(
+                ExpectedConditions.elementToBeClickable(
+                        emailAuthenticationButton
+                )
+        ).click();
+    }
+
+    public boolean isEmailAuthenticationOptionDisplayed() {
+        return wait.until(
+                ExpectedConditions.visibilityOfElementLocated(
+                        emailAuthenticationButton
+                )
+        ).isDisplayed();
+    }
+
+    private boolean isPresent(By locator) {
+        return !driver.findElements(locator).isEmpty();
     }
 }

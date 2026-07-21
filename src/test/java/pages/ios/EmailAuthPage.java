@@ -3,10 +3,11 @@ package pages.ios;
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.ios.IOSDriver;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriverException;
+import org.openqa.selenium.NoAlertPresentException;
+import org.openqa.selenium.Rectangle;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.Rectangle;
+
 import java.util.Map;
 
 public class EmailAuthPage extends IosBasePage {
@@ -36,11 +37,24 @@ public class EmailAuthPage extends IosBasePage {
                             + "AND name == 'Incorrect email or password.'"
             );
 
+    private final By errorConfirmationButton =
+            AppiumBy.accessibilityId("OK");
+
+    private final By forgotPasswordLink =
+            AppiumBy.iOSNsPredicateString(
+                    "type == 'XCUIElementTypeStaticText' "
+                            + "AND name == 'Forgot your password?'"
+            );
+
     public EmailAuthPage(IOSDriver driver) {
         super(driver);
     }
 
     public void selectSignInTab() {
+        if (!driver.findElements(forgotPasswordLink).isEmpty()) {
+            return;
+        }
+
         wait.until(
                 ExpectedConditions.elementToBeClickable(
                         signInTab
@@ -73,26 +87,19 @@ public class EmailAuthPage extends IosBasePage {
                 "mobile: tap",
                 Map.of(
                         "x",
-                        bounds.getX() + bounds.getWidth() / 2,
+                        bounds.getX()
+                                + bounds.getWidth() / 2,
                         "y",
-                        bounds.getY() + bounds.getHeight() / 2
+                        bounds.getY()
+                                + bounds.getHeight() / 2
                 )
         );
 
+        field.clear();
         field.sendKeys(password);
-
-        wait.until(currentDriver -> {
-            String value = field.getAttribute("value");
-
-            return value != null
-                    && !value.isBlank()
-                    && !value.equals("Enter your password");
-        });
     }
 
     public void submitSignIn() {
-        hideKeyboardIfPresent();
-
         wait.until(
                 ExpectedConditions.elementToBeClickable(
                         signInButton
@@ -115,11 +122,23 @@ public class EmailAuthPage extends IosBasePage {
         ).isDisplayed();
     }
 
-    private void hideKeyboardIfPresent() {
+    public void dismissInvalidCredentialsMessageIfPresent() {
+        if (driver.findElements(
+                invalidCredentialsMessage
+        ).isEmpty()) {
+            return;
+        }
+
         try {
-            driver.hideKeyboard();
-        } catch (WebDriverException ignored) {
-            // Keyboard is already hidden.
+            driver.switchTo()
+                    .alert()
+                    .accept();
+        } catch (NoAlertPresentException ignored) {
+            wait.until(
+                    ExpectedConditions.elementToBeClickable(
+                            errorConfirmationButton
+                    )
+            ).click();
         }
     }
 }
