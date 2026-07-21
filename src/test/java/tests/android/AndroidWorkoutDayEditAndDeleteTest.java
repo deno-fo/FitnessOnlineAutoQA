@@ -7,9 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import components.android.AndroidNotificationPermissionDialog;
-import flows.AccountDeletionFlow;
-import flows.CustomWorkoutCreationFlow;
-import flows.GoogleHealthAccessFlow;
+import flows.android.AccountDeletionFlow;
+import flows.android.CustomWorkoutCreationFlow;
+import flows.android.GoogleHealthAccessFlow;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import pages.android.BodyParametersPage;
@@ -67,8 +67,7 @@ public class AndroidWorkoutDayEditAndDeleteTest
     }
 
     @Test
-    public void shouldEditAndDeleteWorkoutDay()
-            throws InterruptedException {
+    public void shouldEditAndDeleteWorkoutDay() {
 
         registerNewUserWithGoogleHealth();
 

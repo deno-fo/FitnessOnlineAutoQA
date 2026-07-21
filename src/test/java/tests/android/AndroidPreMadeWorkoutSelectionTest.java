@@ -2,8 +2,8 @@ package tests.android;
 
 import components.android.AndroidNotificationPermissionDialog;
 import components.android.TutorialOverlay;
-import flows.AccountDeletionFlow;
-import flows.PreMadeWorkoutSelectionFlow;
+import flows.android.AccountDeletionFlow;
+import flows.android.PreMadeWorkoutSelectionFlow;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

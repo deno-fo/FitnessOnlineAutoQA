@@ -1,4 +1,4 @@
-package flows;
+package flows.android;
 
 import io.appium.java_client.android.AndroidDriver;
 import pages.android.GoogleHealthPage;

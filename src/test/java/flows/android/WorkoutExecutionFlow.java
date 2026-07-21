@@ -1,4 +1,4 @@
-package flows;
+package flows.android;
 
 import components.android.NearbyDevicesPermissionDialog;
 import components.android.TutorialOverlay;
@@ -37,7 +37,7 @@ public class WorkoutExecutionFlow {
             String weight,
             String repeats,
             int sets
-    ) throws InterruptedException {
+    ) {
 
         workoutDaysPage.openWorkoutDay(
                 workoutDayName

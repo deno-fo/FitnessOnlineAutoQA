@@ -1,10 +1,10 @@
 package tests.android;
 
 import components.android.AndroidNotificationPermissionDialog;
-import flows.AccountDeletionFlow;
-import flows.CustomWorkoutCreationFlow;
-import flows.GoogleHealthAccessFlow;
-import flows.WorkoutExecutionFlow;
+import flows.android.AccountDeletionFlow;
+import flows.android.CustomWorkoutCreationFlow;
+import flows.android.GoogleHealthAccessFlow;
+import flows.android.WorkoutExecutionFlow;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -67,8 +67,7 @@ public class AndroidCustomWorkoutTest extends BaseAndroidTest {
     }
 
     @Test
-    public void shouldCreateAndCompleteCustomWorkout()
-            throws InterruptedException {
+    public void shouldCreateAndCompleteCustomWorkout() {
 
         registerNewUser();
 

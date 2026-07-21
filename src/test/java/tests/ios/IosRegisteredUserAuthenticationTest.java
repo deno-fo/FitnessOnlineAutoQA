@@ -1,7 +1,7 @@
 package tests.ios;
 
-import flows.IosLogoutFlow;
-import flows.IosPostLoginFlow;
+import flows.ios.IosLogoutFlow;
+import flows.ios.IosPostLoginFlow;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

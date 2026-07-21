@@ -2,7 +2,7 @@ package tests.android;
 
 import annotations.RequiresGoogleHealth;
 import components.android.AndroidNotificationPermissionDialog;
-import flows.AccountDeletionFlow;
+import flows.android.AccountDeletionFlow;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

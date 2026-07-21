@@ -3,7 +3,7 @@ package tests.android;
 import annotations.RequiresGoogleHealth;
 import components.android.AndroidNotificationPermissionDialog;
 import components.android.TutorialOverlay;
-import flows.LogoutFlow;
+import flows.android.LogoutFlow;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

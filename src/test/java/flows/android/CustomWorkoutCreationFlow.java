@@ -1,4 +1,4 @@
-package flows;
+package flows.android;
 
 import components.android.TutorialOverlay;
 import io.appium.java_client.android.AndroidDriver;
@@ -53,7 +53,7 @@ public class CustomWorkoutCreationFlow {
             String sets,
             String repeats,
             String weight
-    ) throws InterruptedException {
+    ) {
 
         customWorkoutSelectionFlow.openWorkoutBuilder();
 

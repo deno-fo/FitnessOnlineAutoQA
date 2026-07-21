@@ -1,4 +1,4 @@
-package flows;
+package flows.ios;
 
 import components.ios.IosTutorialOverlay;
 import io.appium.java_client.ios.IOSDriver;
