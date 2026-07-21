@@ -61,7 +61,7 @@ public class IosPostLoginFlow {
                 return false;
             }
 
-            if (mainPage.isOpenedNow()) {
+            if (mainPage.isDashboardOpenedNow()) {
                 tutorialOverlay.dismissIfPresent();
                 return true;
             }
