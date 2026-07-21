@@ -13,10 +13,17 @@ public class LoginPage extends IosBasePage {
                             + "AND name == 'Skip'"
             );
 
+    private final By guestModeButton =
+            AppiumBy.iOSNsPredicateString(
+                    "type == 'XCUIElementTypeButton' "
+                            + "AND name == 'SKIP'"
+            );
+
     private final By emailAuthenticationButton =
             AppiumBy.iOSNsPredicateString(
                     "type == 'XCUIElementTypeStaticText' "
-                            + "AND name == 'Sign in/Sign up with email'"
+                            + "AND name == "
+                            + "'Sign in/Sign up with email'"
             );
 
     private final By emailAuthenticationForm =
@@ -24,6 +31,27 @@ public class LoginPage extends IosBasePage {
 
     public LoginPage(IOSDriver driver) {
         super(driver);
+    }
+
+    public void enterGuestMode() {
+        wait.until(currentDriver ->
+                isPresent(welcomeSkipButton)
+                        || isPresent(guestModeButton)
+        );
+
+        if (isPresent(welcomeSkipButton)) {
+            wait.until(
+                    ExpectedConditions.elementToBeClickable(
+                            welcomeSkipButton
+                    )
+            ).click();
+        }
+
+        wait.until(
+                ExpectedConditions.elementToBeClickable(
+                        guestModeButton
+                )
+        ).click();
     }
 
     public void openEmailAuthentication() {

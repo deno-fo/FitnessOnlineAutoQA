@@ -3,12 +3,14 @@ package pages.ios;
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.ios.IOSDriver;
 import org.openqa.selenium.By;
+import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
+import java.util.List;
 
 public class MainPage extends IosBasePage {
 
@@ -33,12 +35,40 @@ public class MainPage extends IosBasePage {
         ).isDisplayed();
     }
 
+    public boolean isOpenedNow() {
+        try {
+            List<WebElement> elements =
+                    driver.findElements(moreTab);
+
+            for (WebElement element : elements) {
+                if (element.isDisplayed()) {
+                    return true;
+                }
+            }
+
+            return false;
+        } catch (StaleElementReferenceException ignored) {
+            return false;
+        }
+    }
+
     public boolean isDashboardOpenedNow() {
-        return driver.findElements(
-                        nextTrainingLabel
-                )
-                .stream()
-                .anyMatch(WebElement::isDisplayed);
+        try {
+            List<WebElement> elements =
+                    driver.findElements(
+                            nextTrainingLabel
+                    );
+
+            for (WebElement element : elements) {
+                if (element.isDisplayed()) {
+                    return true;
+                }
+            }
+
+            return false;
+        } catch (StaleElementReferenceException ignored) {
+            return false;
+        }
     }
 
     public boolean openMoreIfAvailable() {
