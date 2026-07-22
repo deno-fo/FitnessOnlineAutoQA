@@ -3,10 +3,10 @@ package pages.ios;
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.ios.IOSDriver;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
-public class HealthAccessPage extends IosBasePage {
+public class HealthAccessPage
+        extends IosBasePage {
 
     private final By healthTitle =
             AppiumBy.iOSNsPredicateString(
@@ -15,59 +15,54 @@ public class HealthAccessPage extends IosBasePage {
             );
 
     private final By grantAccessButton =
-            AppiumBy.accessibilityId("GRANT ACCESS");
+            AppiumBy.accessibilityId(
+                    "GRANT ACCESS"
+            );
 
     private final By turnOnAllButton =
-            AppiumBy.accessibilityId("Turn On All");
+            AppiumBy.accessibilityId(
+                    "Turn On All"
+            );
 
     private final By allowButton =
             AppiumBy.accessibilityId(
                     "UIA.Health.Allow.Button"
             );
 
-    public HealthAccessPage(IOSDriver driver) {
+    public HealthAccessPage(
+            IOSDriver driver
+    ) {
         super(driver);
     }
 
     public boolean isHealthScreenDisplayed() {
-        return isDisplayed(healthTitle);
+        return isDisplayedNow(healthTitle);
     }
 
     public boolean isTurnOnAllButtonDisplayed() {
-        return isDisplayed(turnOnAllButton);
+        return isDisplayedNow(turnOnAllButton);
     }
 
     public boolean isAllowButtonDisplayed() {
-        return isDisplayed(allowButton);
+        return isDisplayedNow(allowButton);
     }
 
     public void grantAccess() {
-        wait.until(
-                ExpectedConditions.elementToBeClickable(
-                        grantAccessButton
-                )
-        ).click();
+        click(grantAccessButton);
     }
 
     public void turnOnAll() {
-        wait.until(
-                ExpectedConditions.elementToBeClickable(
-                        turnOnAllButton
-                )
-        ).click();
+        click(turnOnAllButton);
     }
 
     public void allow() {
-        wait.until(
-                ExpectedConditions.elementToBeClickable(
-                        allowButton
-                )
-        ).click();
+        click(allowButton);
     }
 
-    private boolean isDisplayed(By locator) {
-        return driver.findElements(locator)
-                .stream()
-                .anyMatch(WebElement::isDisplayed);
+    private void click(By locator) {
+        wait.until(
+                ExpectedConditions
+                        .elementToBeClickable(locator)
+        ).click();
     }
 }

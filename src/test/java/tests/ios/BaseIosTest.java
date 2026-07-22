@@ -4,6 +4,7 @@ import io.appium.java_client.ios.IOSDriver;
 import io.appium.java_client.ios.options.XCUITestOptions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.openqa.selenium.WebDriverException;
 import utils.AppiumConfig;
 import utils.IosConfig;
 import utils.IosDeviceUtils;
@@ -17,14 +18,18 @@ public abstract class BaseIosTest {
 
     @BeforeEach
     public void setUp()
-            throws IOException, InterruptedException {
+            throws IOException,
+            InterruptedException {
 
-        AppiumConfig.ensureServerIsAvailable();
+        AppiumConfig
+                .ensureServerIsAvailable();
 
         IosDeviceUtils.IosDevice device =
-                IosDeviceUtils.getSingleConnectedIphone();
+                IosDeviceUtils
+                        .getSingleConnectedIphone();
 
-        XCUITestOptions options = new XCUITestOptions();
+        XCUITestOptions options =
+                new XCUITestOptions();
 
         options.setDeviceName(
                 device.name()
@@ -49,7 +54,8 @@ public abstract class BaseIosTest {
         );
 
         options.setCapability(
-                "appium:allowProvisioningDeviceRegistration",
+                "appium:"
+                        + "allowProvisioningDeviceRegistration",
                 true
         );
 
@@ -65,15 +71,26 @@ public abstract class BaseIosTest {
         options.setNoReset(true);
 
         driver = new IOSDriver(
-                new URL(AppiumConfig.SERVER_URL),
+                new URL(
+                        AppiumConfig.SERVER_URL
+                ),
                 options
         );
     }
 
     @AfterEach
     public void tearDown() {
-        if (driver != null) {
+        if (driver == null) {
+            return;
+        }
+
+        try {
             driver.quit();
+        } catch (WebDriverException ignored) {
+            // Сессия могла уже завершиться
+            // из-за ошибки WDA/Appium.
+        } finally {
+            driver = null;
         }
     }
 }
