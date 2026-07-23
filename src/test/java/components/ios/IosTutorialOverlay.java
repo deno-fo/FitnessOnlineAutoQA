@@ -37,7 +37,7 @@ public class IosTutorialOverlay {
         return findVisiblePopover() != null;
     }
 
-    public boolean waitAndDismissIfPresent(
+    public void waitAndDismissIfPresent(
             Duration timeout
     ) {
         WebDriverWait appearanceWait =
@@ -56,11 +56,37 @@ public class IosTutorialOverlay {
                             findVisiblePopover() != null
             );
         } catch (TimeoutException ignored) {
-            return false;
+            return;
         }
 
         dismissIfPresent();
-        return true;
+    }
+
+    public boolean dismissVisiblePopoverFast() {
+        WebElement popover =
+                findVisiblePopover();
+
+        if (popover == null) {
+            return false;
+        }
+
+        try {
+            tapCenter(popover);
+            return true;
+
+        } catch (
+                StaleElementReferenceException ignored
+        ) {
+            WebElement refreshedPopover =
+                    findVisiblePopover();
+
+            if (refreshedPopover == null) {
+                return false;
+            }
+
+            tapCenter(refreshedPopover);
+            return true;
+        }
     }
 
     public void dismissIfPresent() {

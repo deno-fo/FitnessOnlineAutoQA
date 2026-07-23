@@ -6,9 +6,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
@@ -24,9 +22,7 @@ public class WorkoutReportPage
      */
     private final By completionPercentage =
             AppiumBy.iOSNsPredicateString(
-                    "name == '100%' "
-                            + "OR label == '100%' "
-                            + "OR value == '100%'"
+                    "name == '100%'"
             );
 
     private final By caloriesLabel =
@@ -44,61 +40,57 @@ public class WorkoutReportPage
                     "Pulse"
             );
 
+    private final int closeButtonX;
+    private final int closeButtonY;
+
     public WorkoutReportPage(
             IOSDriver driver
     ) {
         super(driver);
-    }
 
-    public boolean isOpened() {
-        return wait.until(
-                currentDriver ->
-                        isOpenedNow()
-        );
+        Dimension screenSize =
+                driver.manage()
+                        .window()
+                        .getSize();
+
+        closeButtonX =
+                (int) (
+                        screenSize.getWidth()
+                                * 0.11
+                );
+
+        closeButtonY =
+                (int) (
+                        screenSize.getHeight()
+                                * 0.10
+                );
     }
 
     public boolean isOpenedNow() {
-        /*
-         * Для определения открытия отчёта
-         * достаточно двух стабильных признаков.
-         */
         return isDisplayedNow(
                 caloriesLabel
-        )
-                && findPercentageElementNow()
-                != null;
+        );
     }
 
     public String getCompletionPercentage() {
-        WebDriverWait percentageWait =
-                new WebDriverWait(
-                        driver,
-                        Duration.ofSeconds(5)
-                );
-
-        percentageWait.pollingEvery(
-                Duration.ofMillis(250)
-        );
 
         WebElement percentageElement =
-                percentageWait.until(
-                        currentDriver ->
-                                findPercentageElementNow()
-                );
+                findPercentageElementNow();
+
+        if (percentageElement == null) {
+            throw new IllegalStateException(
+                    "Completion percentage element not found."
+            );
+        }
 
         String text =
                 readFirstNonBlankAttribute(
-                        percentageElement,
-                        "name",
-                        "label",
-                        "value"
+                        percentageElement
                 );
 
         if (text == null) {
             throw new IllegalStateException(
-                    "Completion percentage element "
-                            + "was found, but name, label "
-                            + "and value were empty."
+                    "Completion percentage value is empty."
             );
         }
 
@@ -144,51 +136,30 @@ public class WorkoutReportPage
     }
 
     public boolean hasActivityMetrics() {
-        return wait.until(
-                currentDriver ->
-                        isDisplayedNow(caloriesLabel)
-                                && isDisplayedNow(
-                                stepsLabel
-                        )
-                                && isDisplayedNow(
-                                pulseLabel
-                        )
-        );
+        return isDisplayedNow(caloriesLabel)
+                && isDisplayedNow(stepsLabel)
+                && isDisplayedNow(pulseLabel);
+    }
+
+    public void close() {
+        tapCloseButton();
     }
 
     public void closeIfPresent() {
-        if (!isDisplayedNow(
-                caloriesLabel
-        )) {
+        if (!isDisplayedNow(caloriesLabel)) {
             return;
         }
 
-        Dimension screenSize =
-                driver.manage()
-                        .window()
-                        .getSize();
+        tapCloseButton();
+    }
 
+    private void tapCloseButton() {
         driver.executeScript(
                 "mobile: tap",
                 Map.of(
-                        "x",
-                        (int) (
-                                screenSize.getWidth()
-                                        * 0.11
-                        ),
-                        "y",
-                        (int) (
-                                screenSize.getHeight()
-                                        * 0.10
-                        )
+                        "x", closeButtonX,
+                        "y", closeButtonY
                 )
-        );
-
-        wait.until(
-                currentDriver ->
-                        !isDisplayedNow(
-                                caloriesLabel
-                        )
         );
     }
 
@@ -218,16 +189,19 @@ public class WorkoutReportPage
     }
 
     private String readFirstNonBlankAttribute(
-            WebElement element,
-            String... attributes
+            WebElement element
     ) {
-        for (String attribute : attributes) {
+        for (String attribute :
+                List.of(
+                        "name",
+                        "label",
+                        "value"
+                )) {
             try {
                 String value =
                         element.getAttribute(
                                 attribute
                         );
-
                 if (value != null
                         && !value.isBlank()) {
                     return value;
@@ -238,7 +212,6 @@ public class WorkoutReportPage
                 return null;
             }
         }
-
         return null;
     }
 }

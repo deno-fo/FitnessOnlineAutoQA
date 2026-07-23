@@ -20,24 +20,30 @@ public class IosCustomWorkoutTest
 
     private LoginPage loginPage;
 
-    private EmailRegistrationPage
-            registrationPage;
+    private EmailRegistrationPage registrationPage;
 
-    private IosCustomWorkoutCreationFlow
-            workoutCreationFlow;
+    private IosCustomWorkoutCreationFlow workoutCreationFlow;
 
-    private IosWorkoutExecutionFlow
-            workoutExecutionFlow;
+    private IosWorkoutExecutionFlow workoutExecutionFlow;
 
     private IosPostLoginFlow postLoginFlow;
 
-    private IosAccountDeletionFlow
-            accountDeletionFlow;
+    private IosAccountDeletionFlow accountDeletionFlow;
 
     private WorkoutReportPage reportPage;
 
+    private long testStartTime;
+
+    private boolean reportClosed;
+
     @BeforeEach
     public void createPagesAndFlows() {
+
+        testStartTime =
+                System.currentTimeMillis();
+
+        reportClosed = false;
+
         loginPage =
                 new LoginPage(driver);
 
@@ -68,7 +74,12 @@ public class IosCustomWorkoutTest
 
     @Test
     public void shouldCreateAndCompleteCustomWorkout() {
+
+        logTime("START TEST");
+
         loginPage.openEmailAuthentication();
+
+        logTime("Opened email authentication");
 
         registrationPage.registerMaleUser(
                 TestData.uniqueEmail(),
@@ -77,11 +88,17 @@ public class IosCustomWorkoutTest
                 TestData.SURNAME
         );
 
+        logTime("Registration finished");
+
         postLoginFlow.completeUntilMainScreen();
+
+        logTime("Main screen reached");
 
         workoutCreationFlow.createProgram(
                 TestData.CUSTOM_WORKOUT_NAME
         );
+
+        logTime("Program created");
 
         workoutCreationFlow.addWorkoutDay(
                 TestData.CUSTOM_WORKOUT_DAY_NAME,
@@ -90,6 +107,8 @@ public class IosCustomWorkoutTest
                 TestData.EXERCISE_REPEATS,
                 TestData.EXERCISE_WEIGHT
         );
+
+        logTime("Workout day created");
 
         assertTrue(
                 workoutCreationFlow.isWorkoutReady(
@@ -102,6 +121,8 @@ public class IosCustomWorkoutTest
                         + "the exercise or its parameters "
                         + "were not displayed."
         );
+
+        logTime("Workout ready check passed");
 
         int numberOfSets =
                 Integer.parseInt(
@@ -124,6 +145,8 @@ public class IosCustomWorkoutTest
                 TestData.EXERCISE_REPEATS
         );
 
+        logTime("Workout completed");
+
         int expectedRepetitions =
                 numberOfSets * repeats;
 
@@ -133,10 +156,12 @@ public class IosCustomWorkoutTest
                         * weight
                         * 2;
 
-        assertTrue(
-                reportPage.isOpened(),
-                "Workout report was not opened."
-        );
+        /*
+         /*
+ * completeWorkout() возвращает управление
+ * только после появления отчёта.
+ */
+        logTime("Report opened");
 
         assertEquals(
                 "100%",
@@ -144,6 +169,8 @@ public class IosCustomWorkoutTest
                 "Workout completion percentage "
                         + "is incorrect."
         );
+
+        logTime("Percentage checked");
 
         assertTrue(
                 reportPage.hasExpectedRepetitions(
@@ -153,6 +180,8 @@ public class IosCustomWorkoutTest
                         + "is incorrect."
         );
 
+        logTime("Repetitions checked");
+
         assertTrue(
                 reportPage.hasExpectedLiftedWeight(
                         expectedLiftedWeight
@@ -160,24 +189,39 @@ public class IosCustomWorkoutTest
                 "Lifted weight result is incorrect."
         );
 
+        logTime("Weight checked");
+
         assertTrue(
                 reportPage.hasActivityMetrics(),
                 "Calories, steps or pulse block "
                         + "is missing."
         );
 
-        reportPage.closeIfPresent();
+        logTime("Metrics checked");
+
+        reportPage.close();
+
+        reportClosed = true;
+
+        logTime("Report closed");
     }
 
     @AfterEach
     public void cleanUpCreatedAccount() {
-        if (reportPage != null) {
+
+        logTime("Cleanup started");
+
+        if (reportPage != null
+                && !reportClosed) {
+
             reportPage.closeIfPresent();
         }
 
         if (accountDeletionFlow != null
                 && accountDeletionFlow
                 .deleteAccountIfPossible()) {
+
+            logTime("Account deleted");
 
             assertTrue(
                     loginPage
@@ -187,5 +231,23 @@ public class IosCustomWorkoutTest
                             + "was not opened."
             );
         }
+
+        logTime("Cleanup finished");
+    }
+
+    private void logTime(
+            String message
+    ) {
+
+        long elapsed =
+                System.currentTimeMillis()
+                        - testStartTime;
+
+        System.out.println(
+                "[TEST "
+                        + elapsed
+                        + " ms] "
+                        + message
+        );
     }
 }

@@ -11,6 +11,7 @@ import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.Dimension;
 
 import java.time.Duration;
 import java.util.List;
@@ -132,22 +133,17 @@ public class IosCustomWorkoutCreationFlow {
 
         enterProgramName(programName);
 
-        hideKeyboardIfPresent();
+        dismissPossibleSystemNotificationBanner();
+
         click(confirmProgramButton);
 
-        By createdProgram =
-                AppiumBy.accessibilityId(
-                        programName
-                );
-
         wait.until(currentDriver ->
-                isPresent(createdProgram)
-                        || isPresent(workoutsTab)
+                isPresent(workoutsTab)
         );
 
         tutorialOverlay
                 .waitAndDismissIfPresent(
-                        Duration.ofMillis(800)
+                        Duration.ofMillis(300)
                 );
     }
 
@@ -166,43 +162,25 @@ public class IosCustomWorkoutCreationFlow {
                 workoutDayName
         );
 
-        hideKeyboardIfPresent();
-
         click(addNewExerciseButton);
+
         click(chestCategory);
 
         selectFirstExercise();
         click(addSelectedExerciseButton);
-
-        tutorialOverlay
-                .waitAndDismissIfPresent(
-                        Duration.ofMillis(800)
-                );
 
         By exercise =
                 AppiumBy.accessibilityId(
                         exerciseName
                 );
 
-        click(exercise);
-
-        /*
-         * Ждём один маркер открытия настроек.
-         * Остальные поля находятся непосредственно
-         * перед вводом в них.
-         */
-        wait.until(
-                ExpectedConditions
-                        .visibilityOfElementLocated(
-                                setsField
-                        )
+        openExerciseAfterAdding(
+                exercise
         );
 
         enterText(setsField, sets);
         enterText(repeatsField, repeats);
         enterText(weightField, weight);
-
-        hideKeyboardIfPresent();
 
         String workoutParameters =
                 sets
@@ -217,25 +195,13 @@ public class IosCustomWorkoutCreationFlow {
                         workoutParameters
                 );
 
-        /*
-         * Первый SAVE закрывает настройки упражнения.
-         */
         click(saveButton);
 
-        /*
-         * Вместо ожидания staleness кнопки SAVE
-         * ждём бизнес-результат сохранения.
-         */
-        wait.until(
-                ExpectedConditions
-                        .visibilityOfElementLocated(
-                                workoutParametersLabel
-                        )
+        wait.until(currentDriver ->
+                isPresent(workoutParametersLabel)
+                        || isPresent(beginWorkoutButton)
         );
 
-        /*
-         * Второй SAVE сохраняет тренировочный день.
-         */
         click(saveButton);
 
         wait.until(
@@ -277,6 +243,87 @@ public class IosCustomWorkoutCreationFlow {
             );
         } catch (TimeoutException ignored) {
             return false;
+        }
+    }
+
+    private void openExerciseAfterAdding(
+            By exercise
+    ) {
+        WebDriverWait transitionWait =
+                new WebDriverWait(
+                        driver,
+                        Duration.ofSeconds(10)
+                );
+
+        transitionWait.pollingEvery(
+                Duration.ofMillis(150)
+        );
+
+        try {
+            transitionWait.until(
+                    currentDriver -> {
+
+                        /*
+                         * Подсказка может появиться позднее,
+                         * поэтому проверяем её на каждом цикле.
+                         */
+                        if (tutorialOverlay
+                                .dismissVisiblePopoverFast()) {
+                            return false;
+                        }
+
+                        /*
+                         * Настройки упражнения считаем
+                         * открытыми только тогда, когда
+                         * появились второе и третье поля.
+                         *
+                         * Первое поле использовать нельзя:
+                         * на предыдущем экране им является
+                         * название тренировочного дня.
+                         */
+                        if (findVisibleElement(repeatsField)
+                                != null
+                                && findVisibleElement(weightField)
+                                != null) {
+                            return true;
+                        }
+
+                        /*
+                         * Тап повторяем, потому что предыдущий
+                         * мог попасть в появившуюся подсказку.
+                         */
+                        WebElement exerciseElement =
+                                findVisibleElement(
+                                        exercise
+                                );
+
+                        if (exerciseElement != null) {
+                            try {
+                                exerciseElement.click();
+                            } catch (
+                                    WebDriverException ignored
+                            ) {
+                                /*
+                                 * Экран или подсказка могли
+                                 * пересоздаться во время клика.
+                                 * Следующий polling повторит
+                                 * проверку и попытку.
+                                 */
+                            }
+                        }
+
+                        return false;
+                    }
+            );
+
+        } catch (TimeoutException exception) {
+            throw new TimeoutException(
+                    "Exercise settings did not open "
+                            + "after adding the exercise. "
+                            + "The tutorial popover may still "
+                            + "be blocking the screen.",
+                    exception
+            );
         }
     }
 
@@ -397,7 +444,7 @@ public class IosCustomWorkoutCreationFlow {
         WebElement field =
                 wait.until(
                         ExpectedConditions
-                                .elementToBeClickable(
+                                .presenceOfElementLocated(
                                         locator
                                 )
                 );
@@ -405,7 +452,6 @@ public class IosCustomWorkoutCreationFlow {
         field.click();
 
         try {
-            field.clear();
             field.sendKeys(text);
         } catch (
                 StaleElementReferenceException ignored
@@ -413,11 +459,12 @@ public class IosCustomWorkoutCreationFlow {
             WebElement refreshedField =
                     wait.until(
                             ExpectedConditions
-                                    .elementToBeClickable(
+                                    .presenceOfElementLocated(
                                             locator
                                     )
                     );
 
+            refreshedField.click();
             refreshedField.sendKeys(text);
         }
     }
@@ -425,11 +472,17 @@ public class IosCustomWorkoutCreationFlow {
     private void click(
             By locator
     ) {
+        WebElement element =
+                findVisibleElement(locator);
+
+        if (element != null) {
+            element.click();
+            return;
+        }
+
         wait.until(
                 ExpectedConditions
-                        .elementToBeClickable(
-                                locator
-                        )
+                        .visibilityOfElementLocated(locator)
         ).click();
     }
 
@@ -473,6 +526,33 @@ public class IosCustomWorkoutCreationFlow {
                                 + bounds.getHeight() / 2
                 )
         );
+    }
+
+    private WebElement findVisibleElement(
+            By locator
+    ) {
+        try {
+            List<WebElement> elements =
+                    driver.findElements(locator);
+
+            for (WebElement element : elements) {
+                try {
+                    if (element.isDisplayed()) {
+                        return element;
+                    }
+                } catch (
+                        StaleElementReferenceException ignored
+                ) {
+                    // Элемент пересоздался
+                }
+            }
+        } catch (
+                StaleElementReferenceException ignored
+        ) {
+            // Accessibility tree обновилось
+        }
+
+        return null;
     }
 
     private boolean hasValue(
@@ -551,11 +631,83 @@ public class IosCustomWorkoutCreationFlow {
         return false;
     }
 
-    private void hideKeyboardIfPresent() {
+    private void dismissPossibleSystemNotificationBanner() {
+        Dimension screenSize =
+                driver.manage()
+                        .window()
+                        .getSize();
+
+        /*
+         * Даём уведомлению от бота появиться,
+         * затем смахиваем его перед нажатием
+         * кнопки подтверждения.
+         */
+        pause(Duration.ofMillis(700));
+
+        swipeSystemNotificationBannerUp(
+                screenSize
+        );
+
+        /*
+         * Ждём окончания анимации исчезновения,
+         * чтобы следующий тап попал по галочке.
+         */
+        pause(Duration.ofMillis(200));
+    }
+
+    private void swipeSystemNotificationBannerUp(
+            Dimension screenSize
+    ) {
+        int x =
+                screenSize.getWidth() / 2;
+
+        int fromY =
+                (int) (
+                        screenSize.getHeight()
+                                * 0.15
+                );
+
+        int toY =
+                (int) (
+                        screenSize.getHeight()
+                                * 0.02
+                );
+
         try {
-            driver.hideKeyboard();
+            driver.executeScript(
+                    "mobile: dragFromToForDuration",
+                    Map.of(
+                            "duration", 0.20,
+                            "fromX", x,
+                            "fromY", fromY,
+                            "toX", x,
+                            "toY", toY
+                    )
+            );
         } catch (WebDriverException ignored) {
-            // Клавиатура уже скрыта.
+            /*
+             * Системного баннера могло не быть.
+             * В таком случае продолжаем создание
+             * программы штатно.
+             */
+        }
+    }
+
+    private void pause(
+            Duration duration
+    ) {
+        try {
+            Thread.sleep(
+                    duration.toMillis()
+            );
+        } catch (InterruptedException exception) {
+            Thread.currentThread()
+                    .interrupt();
+
+            throw new IllegalStateException(
+                    "Program creation was interrupted.",
+                    exception
+            );
         }
     }
 }

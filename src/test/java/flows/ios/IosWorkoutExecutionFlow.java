@@ -162,8 +162,7 @@ public class IosWorkoutExecutionFlow {
                     repeats
             );
 
-            hideKeyboardIfPresent();
-            click(addSetButton);
+            tapAddSetFast();
         }
 
         /*
@@ -181,12 +180,49 @@ public class IosWorkoutExecutionFlow {
 
         tutorialOverlay
                 .waitAndDismissIfPresent(
-                        Duration.ofMillis(800)
+                        Duration.ofMillis(300)
                 );
 
         wait.until(currentDriver ->
                 reportPage.isOpenedNow()
         );
+    }
+
+    private void tapAddSetFast() {
+
+        WebElement button =
+                findVisibleElement(
+                        addSetButton
+                );
+
+        if (button != null) {
+            try {
+                button.click();
+                return;
+
+            } catch (
+                    WebDriverException ignored
+            ) {
+                /*
+                 * Кнопка найдена, но клавиатура
+                 * могла перекрыть фактический тап.
+                 */
+            }
+        }
+
+        /*
+         * Медленное скрытие клавиатуры выполняем
+         * только как fallback, а не перед каждым
+         * подходом безусловно.
+         */
+        hideKeyboardIfPresent();
+
+        wait.until(
+                ExpectedConditions
+                        .elementToBeClickable(
+                                addSetButton
+                        )
+        ).click();
     }
 
     private void waitForFinishDialog() {
@@ -221,7 +257,7 @@ public class IosWorkoutExecutionFlow {
          * что диалог действительно ещё открыт.
          * Не тыкаем повторно уже по отчёту.
          */
-        if (!isFinishDialogPresent()) {
+        if (isFinishDialogAbsent()) {
             waitForDestinationAfterDialogClosed();
             return;
         }
@@ -243,7 +279,7 @@ public class IosWorkoutExecutionFlow {
             }
         }
 
-        if (!isFinishDialogPresent()) {
+        if (!isFinishDialogAbsent()) {
             waitForDestinationAfterDialogClosed();
             return;
         }
@@ -264,7 +300,7 @@ public class IosWorkoutExecutionFlow {
             }
         }
 
-        if (!isFinishDialogPresent()) {
+        if (!isFinishDialogAbsent()) {
             waitForDestinationAfterDialogClosed();
             return;
         }
@@ -493,31 +529,39 @@ public class IosWorkoutExecutionFlow {
         int consecutiveMissingDialogSamples = 0;
 
         while (System.nanoTime() < deadline) {
-            if (isFinishDestinationOpened()) {
-                return FinishTapResult
-                        .DESTINATION_OPENED;
-            }
 
-            if (isFinishDialogPresent()) {
-                consecutiveMissingDialogSamples = 0;
-            } else {
+            /*
+             * Сначала проверяем только диалог.
+             *
+             * Если он исчез, не сканируем дополнительно
+             * отчёт и popover на каждом проходе.
+             * Экран назначения проверит
+             * waitForDestinationAfterDialogClosed().
+             */
+            if (!isFinishDialogAbsent()) {
                 consecutiveMissingDialogSamples++;
 
-                /*
-                 * Не считаем одиночное исчезновение
-                 * из snapshot доказательством закрытия.
-                 */
                 if (consecutiveMissingDialogSamples >= 2) {
+                    return FinishTapResult.DIALOG_CLOSED;
+                }
+            } else {
+                consecutiveMissingDialogSamples = 0;
+
+                /*
+                 * Проверять назначение имеет смысл,
+                 * только пока диалог ещё числится
+                 * присутствующим в accessibility tree.
+                 */
+                if (isFinishDestinationOpened()) {
                     return FinishTapResult
-                            .DIALOG_CLOSED;
+                            .DESTINATION_OPENED;
                 }
             }
 
-            pause(Duration.ofMillis(200));
+            pause(Duration.ofMillis(100));
         }
 
-        return FinishTapResult
-                .DIALOG_STILL_OPEN;
+        return FinishTapResult.DIALOG_STILL_OPEN;
     }
 
     private boolean handleFinishTapResult(
@@ -542,7 +586,7 @@ public class IosWorkoutExecutionFlow {
         WebDriverWait destinationWait =
                 new WebDriverWait(
                         driver,
-                        Duration.ofSeconds(6)
+                        Duration.ofSeconds(10)
                 );
 
         destinationWait.pollingEvery(
@@ -566,8 +610,8 @@ public class IosWorkoutExecutionFlow {
 
     private boolean isFinishDestinationOpened() {
         try {
-            return reportPage.isOpenedNow()
-                    || tutorialOverlay.isDisplayed();
+            return tutorialOverlay.isDisplayed()
+                    || reportPage.isOpenedNow();
         } catch (
                 StaleElementReferenceException ignored
         ) {
@@ -575,8 +619,8 @@ public class IosWorkoutExecutionFlow {
         }
     }
 
-    private boolean isFinishDialogPresent() {
-        return isPresent(
+    private boolean isFinishDialogAbsent() {
+        return !isPresent(
                 finishDialogMarkers
         );
     }
@@ -758,42 +802,45 @@ public class IosWorkoutExecutionFlow {
             By locator,
             String text
     ) {
-        WebElement field =
-                wait.until(
-                        ExpectedConditions
-                                .elementToBeClickable(
-                                        locator
-                                )
-                );
+        WebElement field = findVisibleElement(locator);
+
+        if (field == null) {
+            field =
+                    wait.until(
+                            ExpectedConditions
+                                    .visibilityOfElementLocated(locator)
+                    );
+        }
 
         field.click();
 
         try {
             field.clear();
             field.sendKeys(text);
-        } catch (
-                StaleElementReferenceException ignored
-        ) {
+
+        } catch (StaleElementReferenceException ignored) {
+
             WebElement refreshedField =
                     wait.until(
                             ExpectedConditions
-                                    .elementToBeClickable(
-                                            locator
-                                    )
+                                    .visibilityOfElementLocated(locator)
                     );
 
             refreshedField.sendKeys(text);
         }
     }
 
-    private void click(
-            By locator
-    ) {
+    private void click(By locator) {
+        WebElement element = findVisibleElement(locator);
+
+        if (element != null) {
+            element.click();
+            return;
+        }
+
         wait.until(
                 ExpectedConditions
-                        .elementToBeClickable(
-                                locator
-                        )
+                        .visibilityOfElementLocated(locator)
         ).click();
     }
 

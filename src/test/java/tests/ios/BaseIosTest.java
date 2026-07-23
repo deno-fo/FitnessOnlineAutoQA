@@ -8,7 +8,7 @@ import org.openqa.selenium.WebDriverException;
 import utils.AppiumConfig;
 import utils.IosConfig;
 import utils.IosDeviceUtils;
-
+import java.util.Map;
 import java.io.IOException;
 import java.net.URL;
 
@@ -75,6 +75,13 @@ public abstract class BaseIosTest {
                         AppiumConfig.SERVER_URL
                 ),
                 options
+        );
+
+        driver.setSettings(
+                Map.of(
+                        "animationCoolOffTimeout",
+                        0.5
+                )
         );
     }
 
