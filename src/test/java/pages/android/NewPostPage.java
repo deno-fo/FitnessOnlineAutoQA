@@ -2,7 +2,6 @@ package pages.android;
 
 import io.appium.java_client.android.AndroidDriver;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 public class NewPostPage extends AndroidBasePage {
@@ -18,24 +17,16 @@ public class NewPostPage extends AndroidBasePage {
     }
 
     public void publishTextPost(String postText) {
-        WebElement postInput = wait.until(
+        wait.until(
                 ExpectedConditions.visibilityOfElementLocated(
                         postField
                 )
-        );
-
-        postInput.sendKeys(postText);
+        ).sendKeys(postText);
 
         wait.until(
                 ExpectedConditions.elementToBeClickable(
                         confirmPostButton
                 )
         ).click();
-
-        wait.until(
-                ExpectedConditions.stalenessOf(
-                        postInput
-                )
-        );
     }
 }
