@@ -112,6 +112,25 @@ public class FeedPage extends AndroidBasePage {
         ).click();
     }
 
+    public void waitUntilReactionCounts(
+            String expectedLikes,
+            String expectedDislikes
+    ) {
+        wait.until(
+                ExpectedConditions.textToBe(
+                        likesCount,
+                        expectedLikes
+                )
+        );
+
+        wait.until(
+                ExpectedConditions.textToBe(
+                        dislikesCount,
+                        expectedDislikes
+                )
+        );
+    }
+
     public String getTopPostLikesCount() {
         return wait.until(
                 ExpectedConditions.visibilityOfElementLocated(
