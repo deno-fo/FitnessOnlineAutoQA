@@ -268,21 +268,23 @@ appium driver run xcuitest open-wda
 В Xcode:
 1. В левой панели выберите проект `WebDriverAgent`.
 2. В разделе `Targets` выберите `WebDriverAgentRunner`.
-3. Откройте вкладку `Signing & Capabilities`.
-4. Включите `Automatically manage signing`.
-5. В поле `Team` выберите:
+3. В верхней области окна убедитесь, что выбран нужный iPhone.
+4. Откройте вкладку `Signing & Capabilities`.
+5. Включите `Automatically manage signing`.
+6. В поле `Team` выберите:
 ```text
 FITNESS ONLINE MChJ
 ```
-6. Убедитесь, что Xcode не показывает красную ошибку подписи.
+7. В поле `Status` вы увидите сообщение, что данный девайс не зарегестрирован - нажмите кнопку `Register Device`.
 
 Если Xcode просит указать Bundle Identifier, используйте значение `WDA_BUNDLE_ID` из файла:
 ```text
 src/test/java/utils/IosConfig.java
 ```
+(на текущий момент com.aiti.FitnessOnline.WebDriverAgent)
 Самостоятельно придумывать новый идентификатор не нужно.
 
-Затем:
+После успешной регистрации устройства в Apple Developer Team, на этой странице надо будет выполнить следующее:
 1. Откройте `Product` → `Scheme`.
 2. Выберите `WebDriverAgentRunner`.
 3. Откройте `Product` → `Destination`.
@@ -339,7 +341,7 @@ xcrun xctrace list devices
 1. Убедитесь, что включено `Automatically manage signing`.
 2. Убедитесь, что выбрана команда `FITNESS ONLINE MChJ`.
 3. Убедитесь, что выбран подключённый iPhone.
-4. Повторно нажмите `Product` → `Test`.
+4. Повторно нажмите `Register Device`.
 
 Если устройство всё равно не появилось, ручное добавление через Apple Developer Portal должен выполнить администратор или владелец команды.
 
