@@ -279,7 +279,7 @@ public class IosWorkoutExecutionFlow {
             }
         }
 
-        if (!isFinishDialogAbsent()) {
+        if (isFinishDialogAbsent()) {
             waitForDestinationAfterDialogClosed();
             return;
         }
@@ -300,7 +300,7 @@ public class IosWorkoutExecutionFlow {
             }
         }
 
-        if (!isFinishDialogAbsent()) {
+        if (isFinishDialogAbsent()) {
             waitForDestinationAfterDialogClosed();
             return;
         }
@@ -530,15 +530,7 @@ public class IosWorkoutExecutionFlow {
 
         while (System.nanoTime() < deadline) {
 
-            /*
-             * Сначала проверяем только диалог.
-             *
-             * Если он исчез, не сканируем дополнительно
-             * отчёт и popover на каждом проходе.
-             * Экран назначения проверит
-             * waitForDestinationAfterDialogClosed().
-             */
-            if (!isFinishDialogAbsent()) {
+            if (isFinishDialogAbsent()) {
                 consecutiveMissingDialogSamples++;
 
                 if (consecutiveMissingDialogSamples >= 2) {
@@ -547,11 +539,6 @@ public class IosWorkoutExecutionFlow {
             } else {
                 consecutiveMissingDialogSamples = 0;
 
-                /*
-                 * Проверять назначение имеет смысл,
-                 * только пока диалог ещё числится
-                 * присутствующим в accessibility tree.
-                 */
                 if (isFinishDestinationOpened()) {
                     return FinishTapResult
                             .DESTINATION_OPENED;
