@@ -51,6 +51,16 @@ public class TestData {
                 + "@sign.com";
     }
 
+    public static String uniqueFeedPostText() {
+        return "Auto feed post "
+                + System.currentTimeMillis();
+    }
+
+    public static String uniqueFeedCommentText() {
+        return "Auto feed comment "
+                + System.currentTimeMillis();
+    }
+
     private TestData() {
     }
 }
