@@ -79,6 +79,28 @@
                 </plugins>
             </build>
         </profile>
+
+        <profile>
+            <id>ios</id>
+
+            <properties>
+                <skip.mobile.tests>false</skip.mobile.tests>
+            </properties>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <includes>
+                                <include>**/Ios*Test.java</include>
+                            </includes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
 </project>
