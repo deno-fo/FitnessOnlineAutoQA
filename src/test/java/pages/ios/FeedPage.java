@@ -3,12 +3,15 @@ package pages.ios;
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.ios.IOSDriver;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Rectangle;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class FeedPage extends IosBasePage {
@@ -32,10 +35,10 @@ public class FeedPage extends IosBasePage {
     private final By createPostButton =
             AppiumBy.accessibilityId("Add");
 
-    private final By actionButtons =
-            AppiumBy.iOSClassChain(
-                    "**/XCUIElementTypeButton"
-                            + "[`name MATCHES '^[0-9]+$'`]"
+    private final By numericButtons =
+            AppiumBy.iOSNsPredicateString(
+                    "type == 'XCUIElementTypeButton' "
+                            + "AND name MATCHES '^[0-9]+$'"
             );
 
     public FeedPage(IOSDriver driver) {
@@ -231,9 +234,44 @@ public class FeedPage extends IosBasePage {
     private List<WebElement> findPostActionButtons(
             WebElement postCell
     ) {
-        return postCell.findElements(
-                actionButtons
+        Rectangle cellBounds =
+                postCell.getRect();
+
+        int actionRowTop =
+                cellBounds.getY()
+                        + cellBounds.getHeight()
+                        - 70;
+
+        List<WebElement> actions =
+                new ArrayList<>();
+
+        for (WebElement button :
+                postCell.findElements(numericButtons)) {
+            try {
+                Rectangle bounds =
+                        button.getRect();
+
+                if (bounds.getY() >= actionRowTop
+                        && bounds.getX() < 220) {
+                    actions.add(button);
+                }
+
+            } catch (
+                    StaleElementReferenceException ignored
+            ) {
+                // The post cell was redrawn.
+            }
+        }
+
+        actions.sort(
+                Comparator.comparingInt(
+                        button -> button
+                                .getRect()
+                                .getX()
+                )
         );
+
+        return actions;
     }
 
     private String actionCount(
