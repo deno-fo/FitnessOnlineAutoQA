@@ -8,7 +8,6 @@ import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import utils.StepTimer;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -30,13 +29,6 @@ public class FeedPage extends IosBasePage {
 
     private final By feedTab =
             AppiumBy.accessibilityId("Feed");
-
-    private final By feedNavigationBar =
-            AppiumBy.iOSNsPredicateString(
-                    "type == 'XCUIElementTypeNavigationBar' "
-                            + "AND name == "
-                            + "'Sport Feed, Actions Menu'"
-            );
 
     private final By createPostButton =
             AppiumBy.accessibilityId("Add");
@@ -70,19 +62,13 @@ public class FeedPage extends IosBasePage {
     }
 
     public void tapFeedTab() {
-        WebElement tab = StepTimer.get(
-                "Feed tab | Wait clickable",
-                () -> wait.until(
-                        ExpectedConditions.elementToBeClickable(
-                                feedTab
-                        )
+        WebElement tab = wait.until(
+                ExpectedConditions.elementToBeClickable(
+                        feedTab
                 )
         );
 
-        StepTimer.run(
-                "Feed tab | Click",
-                tab::click
-        );
+        tapElementCenter(tab);
     }
 
     public void openFeed() {
@@ -91,39 +77,21 @@ public class FeedPage extends IosBasePage {
     }
 
     public void waitUntilReady() {
-        StepTimer.run(
-                "Feed ready | Wait navigation bar",
-                () -> wait.until(
-                        ExpectedConditions.visibilityOfElementLocated(
-                                feedNavigationBar
-                        )
-                )
-        );
-
-        StepTimer.run(
-                "Feed ready | Wait Add button",
-                () -> wait.until(
-                        ExpectedConditions.elementToBeClickable(
-                                createPostButton
-                        )
+        wait.until(
+                ExpectedConditions.elementToBeClickable(
+                        createPostButton
                 )
         );
     }
 
     public void openCreatePost() {
-        WebElement button = StepTimer.get(
-                "Create form | Wait Add clickable",
-                () -> wait.until(
-                        ExpectedConditions.elementToBeClickable(
-                                createPostButton
-                        )
+        WebElement button = wait.until(
+                ExpectedConditions.elementToBeClickable(
+                        createPostButton
                 )
         );
 
-        StepTimer.run(
-                "Create form | Click Add",
-                button::click
-        );
+        tapElementCenter(button);
     }
 
     public void waitUntilPostReady(
@@ -183,38 +151,21 @@ public class FeedPage extends IosBasePage {
     ) {
         return reactionWait.until(currentDriver -> {
             try {
-                PostActionSnapshot snapshot =
-                        findPostActionSnapshotNow(
-                                postText
-                        );
+                ReactionCounts counts =
+                        findReactionCountsNow(postText);
 
-                if (snapshot == null) {
+                if (counts == null) {
                     return null;
                 }
 
-                String likes = actionCount(
-                        snapshot.elements().like()
-                );
-
-                String dislikes = actionCount(
-                        snapshot.elements().dislike()
-                );
-
-                if (!expectedLikes.equals(likes)
+                if (!expectedLikes.equals(counts.likes())
                         || !expectedDislikes.equals(
-                        dislikes
+                        counts.dislikes()
                 )) {
                     return null;
                 }
 
-                cachedPostText = postText;
-                cachedPostActionPoints =
-                        snapshot.points();
-
-                return new ReactionCounts(
-                        likes,
-                        dislikes
-                );
+                return counts;
 
             } catch (
                     StaleElementReferenceException ignored
@@ -224,26 +175,55 @@ public class FeedPage extends IosBasePage {
         });
     }
 
+    private ReactionCounts findReactionCountsNow(
+            String postText
+    ) {
+        WebElement postCell =
+                findPostCellNow(postText);
+
+        if (postCell == null) {
+            return null;
+        }
+
+        List<WebElement> actions =
+                postCell.findElements(numericButtons);
+
+        if (actions.size() < 2) {
+            return null;
+        }
+
+        return new ReactionCounts(
+                actionCount(actions.get(LIKE_INDEX)),
+                actionCount(actions.get(DISLIKE_INDEX))
+        );
+    }
+
     private void tapPostAction(
             String postText,
             int index
     ) {
-        ActionPoint point = StepTimer.get(
-                "Feed action | Resolve coordinates",
-                () -> actionPointByIndex(
-                        getCachedActionPoints(postText),
-                        index
-                )
+        ActionPoint point = actionPointByIndex(
+                getCachedActionPoints(postText),
+                index
         );
 
-        StepTimer.run(
-                "Feed action | Execute coordinate tap",
-                () -> driver.executeScript(
-                        "mobile: tap",
-                        Map.of(
-                                "x", point.x(),
-                                "y", point.y()
-                        )
+        tapPoint(point);
+    }
+
+    private void tapElementCenter(
+            WebElement element
+    ) {
+        tapPoint(centerOf(element.getRect()));
+    }
+
+    private void tapPoint(
+            ActionPoint point
+    ) {
+        driver.executeScript(
+                "mobile: tap",
+                Map.of(
+                        "x", point.x(),
+                        "y", point.y()
                 )
         );
     }
@@ -320,11 +300,6 @@ public class FeedPage extends IosBasePage {
                 actions.get(COMMENTS_INDEX);
 
         return new PostActionSnapshot(
-                new PostActionElements(
-                        like.element(),
-                        dislike.element(),
-                        comments.element()
-                ),
                 new PostActionPoints(
                         centerOf(like.bounds()),
                         centerOf(dislike.bounds()),
@@ -369,10 +344,7 @@ public class FeedPage extends IosBasePage {
                 if (bounds.getY() >= actionRowTop
                         && bounds.getX() < 220) {
                     actions.add(
-                            new LocatedAction(
-                                    button,
-                                    bounds
-                            )
+                            new LocatedAction(bounds)
                     );
                 }
 
@@ -427,7 +399,6 @@ public class FeedPage extends IosBasePage {
     }
 
     private record LocatedAction(
-            WebElement element,
             Rectangle bounds
     ) {
     }
@@ -435,13 +406,6 @@ public class FeedPage extends IosBasePage {
     private record ActionPoint(
             int x,
             int y
-    ) {
-    }
-
-    private record PostActionElements(
-            WebElement like,
-            WebElement dislike,
-            WebElement comments
     ) {
     }
 
@@ -453,7 +417,6 @@ public class FeedPage extends IosBasePage {
     }
 
     private record PostActionSnapshot(
-            PostActionElements elements,
             PostActionPoints points
     ) {
     }
