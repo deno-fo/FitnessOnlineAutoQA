@@ -6,9 +6,12 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import utils.AndroidConfig;
+import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.WebElement;
 
+import java.util.List;
 import java.time.Duration;
+import utils.AndroidConfig;
 
 public class FeedPage extends AndroidBasePage {
 
@@ -63,12 +66,61 @@ public class FeedPage extends AndroidBasePage {
         ).click();
     }
 
-    public void waitUntilPostDisplayed(String postText) {
-        wait.until(
-                ExpectedConditions.visibilityOfElementLocated(
-                        postText(postText)
+    public void waitUntilTopPostReady(String expectedPostText) {
+        wait.until(currentDriver -> {
+            try {
+                List<WebElement> postTexts =
+                        currentDriver.findElements(
+                                id("bodyText")
+                        );
+
+                List<WebElement> likeButtons =
+                        currentDriver.findElements(
+                                likeButton
+                        );
+
+                List<WebElement> dislikeButtons =
+                        currentDriver.findElements(
+                                dislikeButton
+                        );
+
+                List<WebElement> likesCounts =
+                        currentDriver.findElements(
+                                likesCount
+                        );
+
+                List<WebElement> dislikesCounts =
+                        currentDriver.findElements(
+                                dislikesCount
+                        );
+
+                if (postTexts.isEmpty()
+                        || likeButtons.isEmpty()
+                        || dislikeButtons.isEmpty()
+                        || likesCounts.isEmpty()
+                        || dislikesCounts.isEmpty()) {
+
+                    return false;
+                }
+
+                return expectedPostText.equals(
+                        postTexts.get(0).getText()
                 )
-        );
+                        && likeButtons.get(0).isDisplayed()
+                        && likeButtons.get(0).isEnabled()
+                        && dislikeButtons.get(0).isDisplayed()
+                        && dislikeButtons.get(0).isEnabled()
+                        && "0".equals(
+                        likesCounts.get(0).getText()
+                )
+                        && "0".equals(
+                        dislikesCounts.get(0).getText()
+                );
+
+            } catch (StaleElementReferenceException exception) {
+                return false;
+            }
+        });
     }
 
     public boolean isPostDisplayed(String postText) {

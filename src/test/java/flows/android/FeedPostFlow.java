@@ -25,7 +25,7 @@ public class FeedPostFlow {
         feedPage.openCreatePost();
         newPostPage.publishTextPost(postText);
         feedPage.waitUntilReady();
-        feedPage.waitUntilPostDisplayed(postText);
+        feedPage.waitUntilTopPostReady(postText);
     }
 
     public void likeTopPost() {
