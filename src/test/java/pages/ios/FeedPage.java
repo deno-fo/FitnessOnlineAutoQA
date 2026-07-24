@@ -7,7 +7,9 @@ import org.openqa.selenium.Rectangle;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -17,6 +19,8 @@ public class FeedPage extends IosBasePage {
     private static final int LIKE_INDEX = 0;
     private static final int DISLIKE_INDEX = 1;
     private static final int COMMENTS_INDEX = 2;
+
+    private final WebDriverWait fastWait;
 
     private final By feedTab =
             AppiumBy.accessibilityId("Feed");
@@ -44,6 +48,15 @@ public class FeedPage extends IosBasePage {
 
     public FeedPage(IOSDriver driver) {
         super(driver);
+
+        fastWait = new WebDriverWait(
+                driver,
+                Duration.ofSeconds(2)
+        );
+
+        fastWait.pollingEvery(
+                Duration.ofMillis(100)
+        );
     }
 
     public void openFeed() {
@@ -108,7 +121,7 @@ public class FeedPage extends IosBasePage {
     public void waitUntilPostDisappears(
             String postText
     ) {
-        wait.until(currentDriver ->
+        fastWait.until(currentDriver ->
                 findVisiblePostCell(postText) == null
         );
     }
@@ -139,7 +152,7 @@ public class FeedPage extends IosBasePage {
             String expectedLikes,
             String expectedDislikes
     ) {
-        return wait.until(currentDriver -> {
+        return fastWait.until(currentDriver -> {
             try {
                 List<WebElement> actions =
                         currentPostActions(postText);
@@ -182,7 +195,7 @@ public class FeedPage extends IosBasePage {
             String postText,
             int index
     ) {
-        return wait.until(currentDriver -> {
+        return fastWait.until(currentDriver -> {
             try {
                 List<WebElement> actions =
                         currentPostActions(postText);
