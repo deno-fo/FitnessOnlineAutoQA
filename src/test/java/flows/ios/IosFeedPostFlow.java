@@ -140,18 +140,29 @@ public class IosFeedPostFlow {
     }
 
     private void dismissPossibleSystemNotificationBanner() {
-        pause(Duration.ofMillis(250));
-
-        Dimension screenSize =
-                driver.manage()
-                        .window()
-                        .getSize();
-
-        swipeSystemNotificationBannerUp(
-                screenSize
+        StepTimer.run(
+                "Notification banner | Pre-swipe pause",
+                () -> pause(Duration.ofMillis(250))
         );
 
-        pause(Duration.ofMillis(100));
+        Dimension screenSize = StepTimer.get(
+                "Notification banner | Get screen size",
+                () -> driver.manage()
+                        .window()
+                        .getSize()
+        );
+
+        StepTimer.run(
+                "Notification banner | Execute swipe",
+                () -> swipeSystemNotificationBannerUp(
+                        screenSize
+                )
+        );
+
+        StepTimer.run(
+                "Notification banner | Post-swipe pause",
+                () -> pause(Duration.ofMillis(100))
+        );
     }
 
     private void swipeSystemNotificationBannerUp(
