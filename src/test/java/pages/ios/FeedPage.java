@@ -3,15 +3,12 @@ package pages.ios;
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.ios.IOSDriver;
 import org.openqa.selenium.By;
-import org.openqa.selenium.Rectangle;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class FeedPage extends IosBasePage {
@@ -35,15 +32,10 @@ public class FeedPage extends IosBasePage {
     private final By createPostButton =
             AppiumBy.accessibilityId("Add");
 
-    private final By postCells =
-            AppiumBy.className(
-                    "XCUIElementTypeCell"
-            );
-
     private final By actionButtons =
-            AppiumBy.iOSNsPredicateString(
-                    "type == 'XCUIElementTypeButton' "
-                            + "AND name MATCHES '^[0-9]+$'"
+            AppiumBy.iOSClassChain(
+                    "**/XCUIElementTypeButton"
+                            + "[`name MATCHES '^[0-9]+$'`]"
             );
 
     public FeedPage(IOSDriver driver) {
@@ -51,7 +43,7 @@ public class FeedPage extends IosBasePage {
 
         fastWait = new WebDriverWait(
                 driver,
-                Duration.ofSeconds(2)
+                Duration.ofSeconds(3)
         );
 
         fastWait.pollingEvery(
@@ -97,7 +89,7 @@ public class FeedPage extends IosBasePage {
         wait.until(currentDriver -> {
             try {
                 WebElement postCell =
-                        findVisiblePostCell(postText);
+                        findPostCellNow(postText);
 
                 return postCell != null
                         && findPostActionButtons(postCell)
@@ -114,7 +106,7 @@ public class FeedPage extends IosBasePage {
     public boolean isPostDisplayed(
             String postText
     ) {
-        return findVisiblePostCell(postText)
+        return findPostCellNow(postText)
                 != null;
     }
 
@@ -122,7 +114,7 @@ public class FeedPage extends IosBasePage {
             String postText
     ) {
         fastWait.until(currentDriver ->
-                findVisiblePostCell(postText) == null
+                findPostCellNow(postText) == null
         );
     }
 
@@ -216,87 +208,32 @@ public class FeedPage extends IosBasePage {
             String postText
     ) {
         WebElement postCell =
-                findVisiblePostCell(postText);
+                findPostCellNow(postText);
 
-        if (postCell == null) {
-            return List.of();
-        }
-
-        return findPostActionButtons(postCell);
+        return postCell == null
+                ? List.of()
+                : findPostActionButtons(postCell);
     }
 
-    private WebElement findVisiblePostCell(
+    private WebElement findPostCellNow(
             String postText
     ) {
-        By textLocator =
-                AppiumBy.accessibilityId(postText);
+        List<WebElement> cells =
+                driver.findElements(
+                        postCell(postText)
+                );
 
-        for (WebElement cell :
-                driver.findElements(postCells)) {
-            try {
-                if (!cell.isDisplayed()) {
-                    continue;
-                }
-
-                for (WebElement textElement :
-                        cell.findElements(textLocator)) {
-                    if (textElement.isDisplayed()) {
-                        return cell;
-                    }
-                }
-
-            } catch (
-                    StaleElementReferenceException ignored
-            ) {
-                // The feed was redrawn during polling.
-            }
-        }
-
-        return null;
+        return cells.isEmpty()
+                ? null
+                : cells.get(0);
     }
 
     private List<WebElement> findPostActionButtons(
             WebElement postCell
     ) {
-        Rectangle cellBounds =
-                postCell.getRect();
-
-        int actionRowTop =
-                cellBounds.getY()
-                        + cellBounds.getHeight()
-                        - 70;
-
-        List<WebElement> actions =
-                new ArrayList<>();
-
-        for (WebElement button :
-                postCell.findElements(actionButtons)) {
-            try {
-                Rectangle bounds =
-                        button.getRect();
-
-                if (bounds.getY() >= actionRowTop
-                        && bounds.getX() < 220) {
-
-                    actions.add(button);
-                }
-
-            } catch (
-                    StaleElementReferenceException ignored
-            ) {
-                // The post cell was refreshed.
-            }
-        }
-
-        actions.sort(
-                Comparator.comparingInt(
-                        button -> button
-                                .getRect()
-                                .getX()
-                )
+        return postCell.findElements(
+                actionButtons
         );
-
-        return actions;
     }
 
     private String actionCount(
@@ -308,6 +245,16 @@ public class FeedPage extends IosBasePage {
         return name == null
                 ? action.getText()
                 : name;
+    }
+
+    private By postCell(String postText) {
+        return AppiumBy.xpath(
+                "//XCUIElementTypeCell"
+                        + "[.//XCUIElementTypeButton"
+                        + "[@name='"
+                        + postText
+                        + "']]"
+        );
     }
 
     public record ReactionCounts(
