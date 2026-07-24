@@ -40,8 +40,9 @@ public class IosFeedPostFlow {
     public void createTextPost(
             String postText
     ) {
-        feedPage.openFeed();
+        feedPage.tapFeedTab();
         dismissPossibleSystemNotificationBanner();
+        feedPage.waitUntilReady();
         feedPage.openCreatePost();
         newPostPage.publishTextPost(postText);
         feedPage.waitUntilReady();
@@ -94,26 +95,18 @@ public class IosFeedPostFlow {
     }
 
     private void dismissPossibleSystemNotificationBanner() {
+        pause(Duration.ofMillis(250));
+
         Dimension screenSize =
                 driver.manage()
                         .window()
                         .getSize();
 
-        /*
-         * Даём уведомлению от бота появиться,
-         * затем смахиваем его перед нажатием Add.
-         */
-        pause(Duration.ofMillis(700));
-
         swipeSystemNotificationBannerUp(
                 screenSize
         );
 
-        /*
-         * Ждём окончания анимации исчезновения,
-         * чтобы следующий тап попал по кнопке Add.
-         */
-        pause(Duration.ofMillis(200));
+        pause(Duration.ofMillis(100));
     }
 
     private void swipeSystemNotificationBannerUp(
