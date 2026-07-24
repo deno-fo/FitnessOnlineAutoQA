@@ -45,7 +45,6 @@ public class IosFeedPostFlow {
         feedPage.waitUntilReady();
         feedPage.openCreatePost();
         newPostPage.publishTextPost(postText);
-        feedPage.waitUntilReady();
         feedPage.waitUntilPostReady(postText);
     }
 
