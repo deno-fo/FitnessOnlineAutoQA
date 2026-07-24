@@ -2,20 +2,25 @@ package flows.ios;
 
 import components.ios.IosTutorialOverlay;
 import io.appium.java_client.ios.IOSDriver;
+import org.openqa.selenium.Dimension;
+import org.openqa.selenium.WebDriverException;
 import pages.ios.FeedPage;
 import pages.ios.NewPostPage;
 import pages.ios.PostDetailsPage;
 
 import java.time.Duration;
+import java.util.Map;
 
 public class IosFeedPostFlow {
 
+    private final IOSDriver driver;
     private final FeedPage feedPage;
     private final NewPostPage newPostPage;
     private final PostDetailsPage postDetailsPage;
     private final IosTutorialOverlay tutorialOverlay;
 
     public IosFeedPostFlow(IOSDriver driver) {
+        this.driver = driver;
         feedPage = new FeedPage(driver);
         newPostPage = new NewPostPage(driver);
         postDetailsPage = new PostDetailsPage(driver);
@@ -26,6 +31,7 @@ public class IosFeedPostFlow {
             String postText
     ) {
         feedPage.openFeed();
+        dismissPossibleSystemNotificationBanner();
         feedPage.openCreatePost();
         newPostPage.publishTextPost(postText);
         feedPage.waitUntilReady();
@@ -75,5 +81,84 @@ public class IosFeedPostFlow {
         postDetailsPage.deletePost();
         feedPage.waitUntilReady();
         feedPage.waitUntilPostDisappears(postText);
+    }
+
+    private void dismissPossibleSystemNotificationBanner() {
+        Dimension screenSize =
+                driver.manage()
+                        .window()
+                        .getSize();
+
+        /*
+         * Даём уведомлению от бота появиться,
+         * затем смахиваем его перед нажатием Add.
+         */
+        pause(Duration.ofMillis(700));
+
+        swipeSystemNotificationBannerUp(
+                screenSize
+        );
+
+        /*
+         * Ждём окончания анимации исчезновения,
+         * чтобы следующий тап попал по кнопке Add.
+         */
+        pause(Duration.ofMillis(200));
+    }
+
+    private void swipeSystemNotificationBannerUp(
+            Dimension screenSize
+    ) {
+        int x =
+                screenSize.getWidth() / 2;
+
+        int fromY =
+                (int) (
+                        screenSize.getHeight()
+                                * 0.15
+                );
+
+        int toY =
+                (int) (
+                        screenSize.getHeight()
+                                * 0.02
+                );
+
+        try {
+            driver.executeScript(
+                    "mobile: dragFromToForDuration",
+                    Map.of(
+                            "duration", 0.20,
+                            "fromX", x,
+                            "fromY", fromY,
+                            "toX", x,
+                            "toY", toY
+                    )
+            );
+        } catch (WebDriverException ignored) {
+            /*
+             * Системного баннера могло не быть.
+             * В таком случае продолжаем создание
+             * поста штатно.
+             */
+        }
+    }
+
+    private void pause(
+            Duration duration
+    ) {
+        try {
+            Thread.sleep(
+                    duration.toMillis()
+            );
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+
+            throw new IllegalStateException(
+                    "Interrupted while waiting for "
+                            + "the iOS notification banner.",
+                    exception
+            );
+        }
     }
 }
