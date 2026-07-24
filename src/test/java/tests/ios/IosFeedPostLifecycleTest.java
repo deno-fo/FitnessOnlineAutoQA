@@ -11,6 +11,8 @@ import pages.ios.FeedPage;
 import pages.ios.LoginPage;
 import utils.TestData;
 
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -28,6 +30,13 @@ public class IosFeedPostLifecycleTest
 
     @BeforeEach
     public void initializePagesAndFlows() {
+        driver.setSettings(
+                Map.of(
+                        "waitForIdleTimeout", 0.5,
+                        "animationCoolOffTimeout", 0.2
+                )
+        );
+
         loginPage = new LoginPage(driver);
         registrationPage =
                 new EmailRegistrationPage(driver);
