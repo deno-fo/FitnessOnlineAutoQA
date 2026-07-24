@@ -65,40 +65,44 @@ public class IosFeedPostLifecycleTest
         );
 
         feedPostFlow.likePost(postText);
-        feedPage.waitUntilReactionCounts(
-                postText,
-                "1",
-                "0"
-        );
+
+        FeedPage.ReactionCounts likedCounts =
+                feedPage.waitUntilReactionCounts(
+                        postText,
+                        "1",
+                        "0"
+                );
 
         assertEquals(
                 "1",
-                feedPage.getPostLikesCount(postText),
+                likedCounts.likes(),
                 "Feed post likes count is wrong after liking."
         );
 
         assertEquals(
                 "0",
-                feedPage.getPostDislikesCount(postText),
+                likedCounts.dislikes(),
                 "Feed post dislikes count changed after liking."
         );
 
         feedPostFlow.dislikePost(postText);
-        feedPage.waitUntilReactionCounts(
-                postText,
-                "0",
-                "1"
-        );
+
+        FeedPage.ReactionCounts dislikedCounts =
+                feedPage.waitUntilReactionCounts(
+                        postText,
+                        "0",
+                        "1"
+                );
 
         assertEquals(
                 "0",
-                feedPage.getPostLikesCount(postText),
+                dislikedCounts.likes(),
                 "Feed post like was not removed after disliking."
         );
 
         assertEquals(
                 "1",
-                feedPage.getPostDislikesCount(postText),
+                dislikedCounts.dislikes(),
                 "Feed post dislikes count is wrong after disliking."
         );
 
