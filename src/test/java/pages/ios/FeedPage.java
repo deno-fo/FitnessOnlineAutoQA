@@ -22,6 +22,9 @@ public class FeedPage extends IosBasePage {
 
     private final WebDriverWait fastWait;
 
+    private String cachedPostText;
+    private PostActions cachedPostActions;
+
     private final By feedTab =
             AppiumBy.accessibilityId("Feed");
 
@@ -46,7 +49,7 @@ public class FeedPage extends IosBasePage {
 
         fastWait = new WebDriverWait(
                 driver,
-                Duration.ofSeconds(3)
+                Duration.ofSeconds(2)
         );
 
         fastWait.pollingEvery(
@@ -89,21 +92,12 @@ public class FeedPage extends IosBasePage {
     public void waitUntilPostReady(
             String postText
     ) {
-        wait.until(currentDriver -> {
-            try {
-                WebElement postCell =
-                        findPostCellNow(postText);
+        cachedPostActions = wait.until(
+                currentDriver ->
+                        findPostActionsNow(postText)
+        );
 
-                return postCell != null
-                        && findPostActionButtons(postCell)
-                        .size() >= 3;
-
-            } catch (
-                    StaleElementReferenceException ignored
-            ) {
-                return false;
-            }
-        });
+        cachedPostText = postText;
     }
 
     public boolean isPostDisplayed(
@@ -119,27 +113,29 @@ public class FeedPage extends IosBasePage {
         fastWait.until(currentDriver ->
                 findPostCellNow(postText) == null
         );
+
+        clearCachedActions(postText);
     }
 
     public void likePost(String postText) {
-        waitForPostActionButton(
+        clickPostAction(
                 postText,
                 LIKE_INDEX
-        ).click();
+        );
     }
 
     public void dislikePost(String postText) {
-        waitForPostActionButton(
+        clickPostAction(
                 postText,
                 DISLIKE_INDEX
-        ).click();
+        );
     }
 
     public void openPostComments(String postText) {
-        waitForPostActionButton(
+        clickPostAction(
                 postText,
                 COMMENTS_INDEX
-        ).click();
+        );
     }
 
     public ReactionCounts waitUntilReactionCounts(
@@ -149,22 +145,14 @@ public class FeedPage extends IosBasePage {
     ) {
         return fastWait.until(currentDriver -> {
             try {
-                List<WebElement> actions =
-                        currentPostActions(postText);
-
-                if (actions.size() < 3) {
-                    return null;
-                }
+                PostActions actions =
+                        getCachedActions(postText);
 
                 String likes =
-                        actionCount(
-                                actions.get(LIKE_INDEX)
-                        );
+                        actionCount(actions.like());
 
                 String dislikes =
-                        actionCount(
-                                actions.get(DISLIKE_INDEX)
-                        );
+                        actionCount(actions.dislike());
 
                 if (!expectedLikes.equals(likes)
                         || !expectedDislikes.equals(
@@ -181,41 +169,103 @@ public class FeedPage extends IosBasePage {
             } catch (
                     StaleElementReferenceException ignored
             ) {
+                refreshCachedActions(postText);
                 return null;
             }
         });
     }
 
-    private WebElement waitForPostActionButton(
+    private void clickPostAction(
             String postText,
             int index
     ) {
-        return fastWait.until(currentDriver -> {
-            try {
-                List<WebElement> actions =
-                        currentPostActions(postText);
+        try {
+            actionByIndex(
+                    getCachedActions(postText),
+                    index
+            ).click();
 
-                return actions.size() > index
-                        ? actions.get(index)
-                        : null;
+        } catch (StaleElementReferenceException ignored) {
+            refreshCachedActions(postText);
 
-            } catch (
-                    StaleElementReferenceException ignored
-            ) {
-                return null;
-            }
-        });
+            actionByIndex(
+                    getCachedActions(postText),
+                    index
+            ).click();
+        }
     }
 
-    private List<WebElement> currentPostActions(
+    private PostActions getCachedActions(
+            String postText
+    ) {
+        if (postText.equals(cachedPostText)
+                && cachedPostActions != null) {
+            return cachedPostActions;
+        }
+
+        refreshCachedActions(postText);
+        return cachedPostActions;
+    }
+
+    private void refreshCachedActions(
+            String postText
+    ) {
+        cachedPostActions = fastWait.until(
+                currentDriver ->
+                        findPostActionsNow(postText)
+        );
+
+        cachedPostText = postText;
+    }
+
+    private void clearCachedActions(
+            String postText
+    ) {
+        if (!postText.equals(cachedPostText)) {
+            return;
+        }
+
+        cachedPostText = null;
+        cachedPostActions = null;
+    }
+
+    private WebElement actionByIndex(
+            PostActions actions,
+            int index
+    ) {
+        return switch (index) {
+            case LIKE_INDEX -> actions.like();
+            case DISLIKE_INDEX -> actions.dislike();
+            case COMMENTS_INDEX -> actions.comments();
+            default -> throw new IllegalArgumentException(
+                    "Unsupported feed action index: "
+                            + index
+            );
+        };
+    }
+
+    private PostActions findPostActionsNow(
             String postText
     ) {
         WebElement postCell =
                 findPostCellNow(postText);
 
-        return postCell == null
-                ? List.of()
-                : findPostActionButtons(postCell);
+        if (postCell == null) {
+            return null;
+        }
+
+        List<WebElement> actions =
+                findPostActionButtons(postCell);
+
+        if (actions.size() < 3) {
+            return null;
+        }
+
+        return new PostActions(
+                actions.get(LIKE_INDEX),
+                actions.get(DISLIKE_INDEX),
+                actions.get(COMMENTS_INDEX)
+        );
     }
 
     private WebElement findPostCellNow(
@@ -259,7 +309,7 @@ public class FeedPage extends IosBasePage {
             } catch (
                     StaleElementReferenceException ignored
             ) {
-                // The post cell was redrawn.
+                return List.of();
             }
         }
 
@@ -293,6 +343,13 @@ public class FeedPage extends IosBasePage {
                         + postText
                         + "']]"
         );
+    }
+
+    private record PostActions(
+            WebElement like,
+            WebElement dislike,
+            WebElement comments
+    ) {
     }
 
     public record ReactionCounts(
