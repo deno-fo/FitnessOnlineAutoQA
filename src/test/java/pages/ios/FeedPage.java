@@ -8,6 +8,7 @@ import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import utils.StepTimer;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -69,11 +70,19 @@ public class FeedPage extends IosBasePage {
     }
 
     public void tapFeedTab() {
-        wait.until(
-                ExpectedConditions.elementToBeClickable(
-                        feedTab
+        WebElement tab = StepTimer.get(
+                "Feed tab | Wait clickable",
+                () -> wait.until(
+                        ExpectedConditions.elementToBeClickable(
+                                feedTab
+                        )
                 )
-        ).click();
+        );
+
+        StepTimer.run(
+                "Feed tab | Click",
+                tab::click
+        );
     }
 
     public void openFeed() {
@@ -82,25 +91,39 @@ public class FeedPage extends IosBasePage {
     }
 
     public void waitUntilReady() {
-        wait.until(
-                ExpectedConditions.visibilityOfElementLocated(
-                        feedNavigationBar
+        StepTimer.run(
+                "Feed ready | Wait navigation bar",
+                () -> wait.until(
+                        ExpectedConditions.visibilityOfElementLocated(
+                                feedNavigationBar
+                        )
                 )
         );
 
-        wait.until(
-                ExpectedConditions.elementToBeClickable(
-                        createPostButton
+        StepTimer.run(
+                "Feed ready | Wait Add button",
+                () -> wait.until(
+                        ExpectedConditions.elementToBeClickable(
+                                createPostButton
+                        )
                 )
         );
     }
 
     public void openCreatePost() {
-        wait.until(
-                ExpectedConditions.elementToBeClickable(
-                        createPostButton
+        WebElement button = StepTimer.get(
+                "Create form | Wait Add clickable",
+                () -> wait.until(
+                        ExpectedConditions.elementToBeClickable(
+                                createPostButton
+                        )
                 )
-        ).click();
+        );
+
+        StepTimer.run(
+                "Create form | Click Add",
+                button::click
+        );
     }
 
     public void waitUntilPostReady(
@@ -205,16 +228,22 @@ public class FeedPage extends IosBasePage {
             String postText,
             int index
     ) {
-        ActionPoint point = actionPointByIndex(
-                getCachedActionPoints(postText),
-                index
+        ActionPoint point = StepTimer.get(
+                "Feed action | Resolve coordinates",
+                () -> actionPointByIndex(
+                        getCachedActionPoints(postText),
+                        index
+                )
         );
 
-        driver.executeScript(
-                "mobile: tap",
-                Map.of(
-                        "x", point.x(),
-                        "y", point.y()
+        StepTimer.run(
+                "Feed action | Execute coordinate tap",
+                () -> driver.executeScript(
+                        "mobile: tap",
+                        Map.of(
+                                "x", point.x(),
+                                "y", point.y()
+                        )
                 )
         );
     }
