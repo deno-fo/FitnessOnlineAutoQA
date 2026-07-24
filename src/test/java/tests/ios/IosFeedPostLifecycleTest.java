@@ -12,7 +12,6 @@ import pages.ios.LoginPage;
 import utils.TestData;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class IosFeedPostLifecycleTest
@@ -35,9 +34,12 @@ public class IosFeedPostLifecycleTest
         postLoginFlow =
                 new IosPostLoginFlow(driver);
 
-        feedPostFlow =
-                new IosFeedPostFlow(driver);
         feedPage = new FeedPage(driver);
+        feedPostFlow =
+                new IosFeedPostFlow(
+                        driver,
+                        feedPage
+                );
 
         accountDeletionFlow =
                 new IosAccountDeletionFlow(driver);
@@ -106,11 +108,6 @@ public class IosFeedPostLifecycleTest
         feedPostFlow.addComment(commentText);
         feedPostFlow.deleteComment(commentText);
         feedPostFlow.deletePost(postText);
-
-        assertFalse(
-                feedPage.isPostDisplayed(postText),
-                "Deleted feed post is still displayed."
-        );
     }
 
     private void registerNewUser() {
