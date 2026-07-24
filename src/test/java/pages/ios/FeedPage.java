@@ -62,13 +62,11 @@ public class FeedPage extends IosBasePage {
     }
 
     public void tapFeedTab() {
-        WebElement tab = wait.until(
+        wait.until(
                 ExpectedConditions.elementToBeClickable(
                         feedTab
                 )
-        );
-
-        tapElementCenter(tab);
+        ).click();
     }
 
     public void openFeed() {
@@ -85,13 +83,11 @@ public class FeedPage extends IosBasePage {
     }
 
     public void openCreatePost() {
-        WebElement button = wait.until(
+        wait.until(
                 ExpectedConditions.elementToBeClickable(
                         createPostButton
                 )
-        );
-
-        tapElementCenter(button);
+        ).click();
     }
 
     public void waitUntilPostReady(
@@ -151,21 +147,38 @@ public class FeedPage extends IosBasePage {
     ) {
         return reactionWait.until(currentDriver -> {
             try {
-                ReactionCounts counts =
-                        findReactionCountsNow(postText);
+                PostActionSnapshot snapshot =
+                        findPostActionSnapshotNow(
+                                postText
+                        );
 
-                if (counts == null) {
+                if (snapshot == null) {
                     return null;
                 }
 
-                if (!expectedLikes.equals(counts.likes())
+                String likes = actionCount(
+                        snapshot.elements().like()
+                );
+
+                String dislikes = actionCount(
+                        snapshot.elements().dislike()
+                );
+
+                if (!expectedLikes.equals(likes)
                         || !expectedDislikes.equals(
-                        counts.dislikes()
+                        dislikes
                 )) {
                     return null;
                 }
 
-                return counts;
+                cachedPostText = postText;
+                cachedPostActionPoints =
+                        snapshot.points();
+
+                return new ReactionCounts(
+                        likes,
+                        dislikes
+                );
 
             } catch (
                     StaleElementReferenceException ignored
@@ -173,29 +186,6 @@ public class FeedPage extends IosBasePage {
                 return null;
             }
         });
-    }
-
-    private ReactionCounts findReactionCountsNow(
-            String postText
-    ) {
-        WebElement postCell =
-                findPostCellNow(postText);
-
-        if (postCell == null) {
-            return null;
-        }
-
-        List<WebElement> actions =
-                postCell.findElements(numericButtons);
-
-        if (actions.size() < 2) {
-            return null;
-        }
-
-        return new ReactionCounts(
-                actionCount(actions.get(LIKE_INDEX)),
-                actionCount(actions.get(DISLIKE_INDEX))
-        );
     }
 
     private void tapPostAction(
@@ -207,18 +197,6 @@ public class FeedPage extends IosBasePage {
                 index
         );
 
-        tapPoint(point);
-    }
-
-    private void tapElementCenter(
-            WebElement element
-    ) {
-        tapPoint(centerOf(element.getRect()));
-    }
-
-    private void tapPoint(
-            ActionPoint point
-    ) {
         driver.executeScript(
                 "mobile: tap",
                 Map.of(
@@ -300,6 +278,11 @@ public class FeedPage extends IosBasePage {
                 actions.get(COMMENTS_INDEX);
 
         return new PostActionSnapshot(
+                new PostActionElements(
+                        like.element(),
+                        dislike.element(),
+                        comments.element()
+                ),
                 new PostActionPoints(
                         centerOf(like.bounds()),
                         centerOf(dislike.bounds()),
@@ -344,7 +327,10 @@ public class FeedPage extends IosBasePage {
                 if (bounds.getY() >= actionRowTop
                         && bounds.getX() < 220) {
                     actions.add(
-                            new LocatedAction(bounds)
+                            new LocatedAction(
+                                    button,
+                                    bounds
+                            )
                     );
                 }
 
@@ -399,6 +385,7 @@ public class FeedPage extends IosBasePage {
     }
 
     private record LocatedAction(
+            WebElement element,
             Rectangle bounds
     ) {
     }
@@ -406,6 +393,13 @@ public class FeedPage extends IosBasePage {
     private record ActionPoint(
             int x,
             int y
+    ) {
+    }
+
+    private record PostActionElements(
+            WebElement like,
+            WebElement dislike,
+            WebElement comments
     ) {
     }
 
@@ -417,6 +411,7 @@ public class FeedPage extends IosBasePage {
     }
 
     private record PostActionSnapshot(
+            PostActionElements elements,
             PostActionPoints points
     ) {
     }
