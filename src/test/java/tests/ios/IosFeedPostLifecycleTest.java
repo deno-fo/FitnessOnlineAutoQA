@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import pages.ios.EmailRegistrationPage;
 import pages.ios.FeedPage;
 import pages.ios.LoginPage;
+import utils.StepTimer;
 import utils.TestData;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -57,18 +58,26 @@ public class IosFeedPostLifecycleTest
 
         feedPostFlow.createTextPost(postText);
 
+        boolean postDisplayed = StepTimer.get(
+                "Feed | Verify created post",
+                () -> feedPage.isPostDisplayed(postText)
+        );
+
         assertTrue(
-                feedPage.isPostDisplayed(postText),
+                postDisplayed,
                 "Created feed post is not displayed."
         );
 
         feedPostFlow.likePost(postText);
 
         FeedPage.ReactionCounts likedCounts =
-                feedPage.waitUntilReactionCounts(
-                        postText,
-                        "1",
-                        "0"
+                StepTimer.get(
+                        "Feed | Wait for like counts",
+                        () -> feedPage.waitUntilReactionCounts(
+                                postText,
+                                "1",
+                                "0"
+                        )
                 );
 
         assertEquals(
@@ -86,10 +95,13 @@ public class IosFeedPostLifecycleTest
         feedPostFlow.dislikePost(postText);
 
         FeedPage.ReactionCounts dislikedCounts =
-                feedPage.waitUntilReactionCounts(
-                        postText,
-                        "0",
-                        "1"
+                StepTimer.get(
+                        "Feed | Wait for dislike counts",
+                        () -> feedPage.waitUntilReactionCounts(
+                                postText,
+                                "0",
+                                "1"
+                        )
                 );
 
         assertEquals(
@@ -111,16 +123,25 @@ public class IosFeedPostLifecycleTest
     }
 
     private void registerNewUser() {
-        loginPage.openEmailAuthentication();
-
-        registrationPage.registerMaleUser(
-                TestData.uniqueEmail(),
-                TestData.PASSWORD,
-                TestData.NAME,
-                TestData.SURNAME
+        StepTimer.run(
+                "Registration | Open email authentication",
+                loginPage::openEmailAuthentication
         );
 
-        postLoginFlow.completeUntilMainScreen();
+        StepTimer.run(
+                "Registration | Submit registration",
+                () -> registrationPage.registerMaleUser(
+                        TestData.uniqueEmail(),
+                        TestData.PASSWORD,
+                        TestData.NAME,
+                        TestData.SURNAME
+                )
+        );
+
+        StepTimer.run(
+                "Registration | Complete onboarding",
+                postLoginFlow::completeUntilMainScreen
+        );
     }
 
     @AfterEach
@@ -134,9 +155,14 @@ public class IosFeedPostLifecycleTest
                         .deleteAccountIfPossible();
 
         if (accountDeleted) {
-            assertTrue(
+            boolean loginDisplayed = StepTimer.get(
+                    "Cleanup | Verify login screen",
                     loginPage
-                            .isEmailAuthenticationOptionDisplayed(),
+                            ::isEmailAuthenticationOptionDisplayed
+            );
+
+            assertTrue(
+                    loginDisplayed,
                     "Account cleanup failed: "
                             + "the login screen was not opened."
             );
