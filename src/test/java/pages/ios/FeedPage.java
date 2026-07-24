@@ -5,12 +5,9 @@ import io.appium.java_client.ios.IOSDriver;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Rectangle;
 import org.openqa.selenium.StaleElementReferenceException;
-import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -39,9 +36,10 @@ public class FeedPage extends IosBasePage {
                     "XCUIElementTypeCell"
             );
 
-    private final By buttons =
-            AppiumBy.className(
-                    "XCUIElementTypeButton"
+    private final By actionButtons =
+            AppiumBy.iOSNsPredicateString(
+                    "type == 'XCUIElementTypeButton' "
+                            + "AND name MATCHES '^[0-9]+$'"
             );
 
     public FeedPage(IOSDriver driver) {
@@ -88,38 +86,9 @@ public class FeedPage extends IosBasePage {
                 WebElement postCell =
                         findVisiblePostCell(postText);
 
-                if (postCell == null) {
-                    return false;
-                }
-
-                List<WebElement> actions =
-                        findPostActionButtons(postCell);
-
-                if (actions.size() < 3) {
-                    return false;
-                }
-
-                return actions.get(LIKE_INDEX)
-                        .isEnabled()
-                        && actions.get(DISLIKE_INDEX)
-                        .isEnabled()
-                        && actions.get(COMMENTS_INDEX)
-                        .isEnabled()
-                        && "0".equals(
-                        actionCount(
-                                actions.get(LIKE_INDEX)
-                        )
-                )
-                        && "0".equals(
-                        actionCount(
-                                actions.get(DISLIKE_INDEX)
-                        )
-                )
-                        && "0".equals(
-                        actionCount(
-                                actions.get(COMMENTS_INDEX)
-                        )
-                );
+                return postCell != null
+                        && findPostActionButtons(postCell)
+                        .size() >= 3;
 
             } catch (
                     StaleElementReferenceException ignored
@@ -132,26 +101,8 @@ public class FeedPage extends IosBasePage {
     public boolean isPostDisplayed(
             String postText
     ) {
-        WebDriverWait shortWait =
-                new WebDriverWait(
-                        driver,
-                        Duration.ofSeconds(3)
-                );
-
-        shortWait.pollingEvery(
-                Duration.ofMillis(250)
-        );
-
-        try {
-            return shortWait.until(
-                    currentDriver ->
-                            findVisiblePostCell(postText)
-                                    != null
-            );
-
-        } catch (TimeoutException ignored) {
-            return false;
-        }
+        return findVisiblePostCell(postText)
+                != null;
     }
 
     public void waitUntilPostDisappears(
@@ -183,56 +134,48 @@ public class FeedPage extends IosBasePage {
         ).click();
     }
 
-    public void waitUntilReactionCounts(
+    public ReactionCounts waitUntilReactionCounts(
             String postText,
             String expectedLikes,
             String expectedDislikes
     ) {
-        wait.until(currentDriver -> {
+        return wait.until(currentDriver -> {
             try {
                 List<WebElement> actions =
                         currentPostActions(postText);
 
-                return actions.size() >= 3
-                        && expectedLikes.equals(
+                if (actions.size() < 3) {
+                    return null;
+                }
+
+                String likes =
                         actionCount(
                                 actions.get(LIKE_INDEX)
-                        )
-                )
-                        && expectedDislikes.equals(
+                        );
+
+                String dislikes =
                         actionCount(
                                 actions.get(DISLIKE_INDEX)
-                        )
+                        );
+
+                if (!expectedLikes.equals(likes)
+                        || !expectedDislikes.equals(
+                        dislikes
+                )) {
+                    return null;
+                }
+
+                return new ReactionCounts(
+                        likes,
+                        dislikes
                 );
 
             } catch (
                     StaleElementReferenceException ignored
             ) {
-                return false;
+                return null;
             }
         });
-    }
-
-    public String getPostLikesCount(
-            String postText
-    ) {
-        return actionCount(
-                waitForPostActionButton(
-                        postText,
-                        LIKE_INDEX
-                )
-        );
-    }
-
-    public String getPostDislikesCount(
-            String postText
-    ) {
-        return actionCount(
-                waitForPostActionButton(
-                        postText,
-                        DISLIKE_INDEX
-                )
-        );
     }
 
     private WebElement waitForPostActionButton(
@@ -244,15 +187,8 @@ public class FeedPage extends IosBasePage {
                 List<WebElement> actions =
                         currentPostActions(postText);
 
-                if (actions.size() <= index) {
-                    return null;
-                }
-
-                WebElement action = actions.get(index);
-
-                return action.isDisplayed()
-                        && action.isEnabled()
-                        ? action
+                return actions.size() > index
+                        ? actions.get(index)
                         : null;
 
             } catch (
@@ -321,13 +257,12 @@ public class FeedPage extends IosBasePage {
                 new ArrayList<>();
 
         for (WebElement button :
-                postCell.findElements(buttons)) {
+                postCell.findElements(actionButtons)) {
             try {
                 Rectangle bounds =
                         button.getRect();
 
-                if (button.isDisplayed()
-                        && bounds.getY() >= actionRowTop
+                if (bounds.getY() >= actionRowTop
                         && bounds.getX() < 220) {
 
                     actions.add(button);
@@ -360,5 +295,11 @@ public class FeedPage extends IosBasePage {
         return name == null
                 ? action.getText()
                 : name;
+    }
+
+    public record ReactionCounts(
+            String likes,
+            String dislikes
+    ) {
     }
 }
