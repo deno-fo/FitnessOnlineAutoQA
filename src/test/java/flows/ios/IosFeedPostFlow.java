@@ -1,39 +1,79 @@
 package flows.ios;
 
+import components.ios.IosTutorialOverlay;
 import io.appium.java_client.ios.IOSDriver;
-import pages.ios.IosFeedPage;
-import pages.ios.IosNewPostPage;
-import pages.ios.IosPostDetailsPage;
+import pages.ios.FeedPage;
+import pages.ios.NewPostPage;
+import pages.ios.PostDetailsPage;
+
+import java.time.Duration;
 
 public class IosFeedPostFlow {
 
-    private final IosFeedPage feedPage;
-    private final IosNewPostPage newPostPage;
-    private final IosPostDetailsPage postDetailsPage;
+    private final FeedPage feedPage;
+    private final NewPostPage newPostPage;
+    private final PostDetailsPage postDetailsPage;
+    private final IosTutorialOverlay tutorialOverlay;
 
     public IosFeedPostFlow(IOSDriver driver) {
-        feedPage = new IosFeedPage(driver);
-        newPostPage = new IosNewPostPage(driver);
-        postDetailsPage = new IosPostDetailsPage(driver);
+        feedPage = new FeedPage(driver);
+        newPostPage = new NewPostPage(driver);
+        postDetailsPage = new PostDetailsPage(driver);
+        tutorialOverlay = new IosTutorialOverlay(driver);
     }
 
-    public void createTextPost(String text) {
+    public void createTextPost(
+            String postText
+    ) {
+        feedPage.openFeed();
         feedPage.openCreatePost();
-        newPostPage.publishTextPost(text);
-        feedPage.waitUntilTopPostReady(text);
+        newPostPage.publishTextPost(postText);
+        feedPage.waitUntilReady();
+        feedPage.waitUntilPostReady(postText);
     }
 
-    public void likeTopPost() {
-        feedPage.likeTopPost();
-        feedPage.waitUntilReactionCounts("1", "0");
+    public void likePost(
+            String postText
+    ) {
+        feedPage.likePost(postText);
     }
 
-    public void openComments() {
-        feedPage.openTopPostComments();
+    public void dislikePost(
+            String postText
+    ) {
+        feedPage.dislikePost(postText);
+    }
+
+    public void openPostComments(
+            String postText
+    ) {
+        feedPage.openPostComments(postText);
+
+        tutorialOverlay
+                .waitAndDismissIfPresent(
+                        Duration.ofMillis(300)
+                );
+
         postDetailsPage.waitUntilOpened();
     }
 
-    public void deletePost() {
+    public void addComment(
+            String commentText
+    ) {
+        postDetailsPage.addComment(commentText);
+    }
+
+    public void deleteComment(
+            String commentText
+    ) {
+        postDetailsPage.deleteComment(commentText);
+    }
+
+    public void deletePost(
+            String postText
+    ) {
         postDetailsPage.deletePost();
+        feedPage.waitUntilReady();
+        feedPage.waitUntilPostDisappears(postText);
     }
 }
