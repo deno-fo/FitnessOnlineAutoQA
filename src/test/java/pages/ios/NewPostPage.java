@@ -7,6 +7,7 @@ import org.openqa.selenium.Rectangle;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import utils.StepTimer;
 
 import java.util.List;
 
@@ -38,28 +39,52 @@ public class NewPostPage extends IosBasePage {
     public void publishTextPost(
             String postText
     ) {
-        wait.until(
-                ExpectedConditions.visibilityOfElementLocated(
-                        title
+        StepTimer.run(
+                "New post form | Wait title",
+                () -> wait.until(
+                        ExpectedConditions.visibilityOfElementLocated(
+                                title
+                        )
                 )
         );
 
-        WebElement field = wait.until(
-                ExpectedConditions.elementToBeClickable(
-                        postField
+        WebElement field = StepTimer.get(
+                "New post form | Wait text field",
+                () -> wait.until(
+                        ExpectedConditions.elementToBeClickable(
+                                postField
+                        )
                 )
         );
 
-        field.click();
-        field.sendKeys(postText);
+        StepTimer.run(
+                "New post form | Click text field",
+                field::click
+        );
 
-        hideKeyboardIfCovering(createButton);
+        StepTimer.run(
+                "New post form | Enter post text",
+                () -> field.sendKeys(postText)
+        );
 
-        wait.until(
-                ExpectedConditions.elementToBeClickable(
-                        createButton
+        StepTimer.run(
+                "New post form | Hide keyboard",
+                () -> hideKeyboardIfCovering(createButton)
+        );
+
+        WebElement create = StepTimer.get(
+                "New post form | Wait CREATE clickable",
+                () -> wait.until(
+                        ExpectedConditions.elementToBeClickable(
+                                createButton
+                        )
                 )
-        ).click();
+        );
+
+        StepTimer.run(
+                "New post form | Click CREATE",
+                create::click
+        );
     }
 
     private void hideKeyboardIfCovering(
