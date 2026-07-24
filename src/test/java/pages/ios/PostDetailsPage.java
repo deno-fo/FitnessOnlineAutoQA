@@ -5,7 +5,6 @@ import io.appium.java_client.ios.IOSDriver;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Rectangle;
 import org.openqa.selenium.StaleElementReferenceException;
-import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -18,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 
 public class PostDetailsPage extends IosBasePage {
+
+    private final WebDriverWait fastWait;
 
     private final By postNavigationBar =
             AppiumBy.iOSNsPredicateString(
@@ -38,11 +39,6 @@ public class PostDetailsPage extends IosBasePage {
     private final By sendCommentButton =
             AppiumBy.accessibilityId("send");
 
-    private final By cells =
-            AppiumBy.className(
-                    "XCUIElementTypeCell"
-            );
-
     private final By commentDeleteButton =
             AppiumBy.iOSNsPredicateString(
                     "type == 'XCUIElementTypeButton' "
@@ -57,6 +53,15 @@ public class PostDetailsPage extends IosBasePage {
 
     public PostDetailsPage(IOSDriver driver) {
         super(driver);
+
+        fastWait = new WebDriverWait(
+                driver,
+                Duration.ofSeconds(3)
+        );
+
+        fastWait.pollingEvery(
+                Duration.ofMillis(100)
+        );
     }
 
     public void waitUntilOpened() {
@@ -67,7 +72,7 @@ public class PostDetailsPage extends IosBasePage {
         );
 
         wait.until(
-                ExpectedConditions.visibilityOfElementLocated(
+                ExpectedConditions.presenceOfElementLocated(
                         commentField
                 )
         );
@@ -85,7 +90,7 @@ public class PostDetailsPage extends IosBasePage {
         field.click();
         field.sendKeys(commentText);
 
-        wait.until(
+        fastWait.until(
                 ExpectedConditions.elementToBeClickable(
                         sendCommentButton
                 )
@@ -97,70 +102,51 @@ public class PostDetailsPage extends IosBasePage {
     public void waitUntilCommentDisplayed(
             String commentText
     ) {
-        wait.until(currentDriver ->
-                findVisibleCommentCell(commentText)
+        fastWait.until(currentDriver ->
+                findCommentCellNow(commentText)
                         != null
         );
     }
 
-    public boolean isCommentDisplayed(
+    public boolean isCommentDisplayedNow(
             String commentText
     ) {
-        WebDriverWait shortWait =
-                new WebDriverWait(
-                        driver,
-                        Duration.ofSeconds(3)
-                );
-
-        shortWait.pollingEvery(
-                Duration.ofMillis(250)
-        );
-
-        try {
-            return shortWait.until(
-                    currentDriver ->
-                            findVisibleCommentCell(
-                                    commentText
-                            ) != null
-            );
-
-        } catch (TimeoutException ignored) {
-            return false;
-        }
+        return findCommentCellNow(commentText)
+                != null;
     }
 
     public void deleteComment(
             String commentText
     ) {
-        WebElement commentCell = wait.until(
+        WebElement commentCell = fastWait.until(
                 currentDriver ->
-                        findVisibleCommentCell(
+                        findCommentCellNow(
                                 commentText
                         )
         );
 
         swipeCellLeft(commentCell);
 
-        wait.until(
-                ExpectedConditions.elementToBeClickable(
+        fastWait.until(
+                ExpectedConditions.presenceOfElementLocated(
                         commentDeleteButton
                 )
         ).click();
 
-        wait.until(currentDriver ->
-                findVisibleCommentCell(commentText)
+        fastWait.until(currentDriver ->
+                findCommentCellNow(commentText)
                         == null
         );
     }
 
     public void deletePost() {
-        wait.until(
+        fastWait.until(
                 ExpectedConditions.elementToBeClickable(
                         postMoreButton
                 )
         ).click();
 
-        wait.until(
+        fastWait.until(
                 ExpectedConditions.elementToBeClickable(
                         postDeleteMenuItem
                 )
@@ -169,34 +155,24 @@ public class PostDetailsPage extends IosBasePage {
         confirmPostDeletion();
     }
 
-    private WebElement findVisibleCommentCell(
+    private WebElement findCommentCellNow(
             String commentText
     ) {
-        By textLocator =
-                AppiumBy.accessibilityId(commentText);
+        try {
+            List<WebElement> commentCells =
+                    driver.findElements(
+                            commentCell(commentText)
+                    );
 
-        for (WebElement cell :
-                driver.findElements(cells)) {
-            try {
-                if (!cell.isDisplayed()) {
-                    continue;
-                }
+            return commentCells.isEmpty()
+                    ? null
+                    : commentCells.get(0);
 
-                for (WebElement textElement :
-                        cell.findElements(textLocator)) {
-                    if (textElement.isDisplayed()) {
-                        return cell;
-                    }
-                }
-
-            } catch (
-                    StaleElementReferenceException ignored
-            ) {
-                // The comments table was refreshed.
-            }
+        } catch (
+                StaleElementReferenceException ignored
+        ) {
+            return null;
         }
-
-        return null;
     }
 
     private void swipeCellLeft(
@@ -233,38 +209,41 @@ public class PostDetailsPage extends IosBasePage {
     }
 
     private void confirmPostDeletion() {
-        wait.until(
+        fastWait.until(
                 ExpectedConditions.alertIsPresent()
         );
+
+        try {
+            driver.switchTo()
+                    .alert()
+                    .accept();
+            return;
+
+        } catch (WebDriverException ignored) {
+            // Fall back to the Appium mobile alert command.
+        }
 
         List<String> buttons =
                 getAlertButtons();
 
-        if (!buttons.isEmpty()) {
-            String rightButton =
-                    buttons.get(
-                            buttons.size() - 1
-                    );
-
-            try {
-                driver.executeScript(
-                        "mobile: alert",
-                        Map.of(
-                                "action", "accept",
-                                "buttonLabel", rightButton
-                        )
-                );
-
-                return;
-
-            } catch (WebDriverException ignored) {
-                // Fall back to Selenium Alert API.
-            }
+        if (buttons.isEmpty()) {
+            throw new IllegalStateException(
+                    "Post deletion alert has no buttons."
+            );
         }
 
-        driver.switchTo()
-                .alert()
-                .accept();
+        String rightButton =
+                buttons.get(
+                        buttons.size() - 1
+                );
+
+        driver.executeScript(
+                "mobile: alert",
+                Map.of(
+                        "action", "accept",
+                        "buttonLabel", rightButton
+                )
+        );
     }
 
     private List<String> getAlertButtons() {
@@ -299,5 +278,16 @@ public class PostDetailsPage extends IosBasePage {
         } catch (WebDriverException ignored) {
             return List.of();
         }
+    }
+
+    private By commentCell(
+            String commentText
+    ) {
+        return AppiumBy.xpath(
+                "//XCUIElementTypeCell"
+                        + "[.//*[@name='"
+                        + commentText
+                        + "']]"
+        );
     }
 }
