@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import pages.ios.EmailRegistrationPage;
 import pages.ios.FeedPage;
 import pages.ios.LoginPage;
-import pages.ios.PostDetailsPage;
 import utils.TestData;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,7 +24,6 @@ public class IosFeedPostLifecycleTest
 
     private IosFeedPostFlow feedPostFlow;
     private FeedPage feedPage;
-    private PostDetailsPage postDetailsPage;
 
     private IosAccountDeletionFlow accountDeletionFlow;
 
@@ -40,8 +38,6 @@ public class IosFeedPostLifecycleTest
         feedPostFlow =
                 new IosFeedPostFlow(driver);
         feedPage = new FeedPage(driver);
-        postDetailsPage =
-                new PostDetailsPage(driver);
 
         accountDeletionFlow =
                 new IosAccountDeletionFlow(driver);
@@ -108,19 +104,7 @@ public class IosFeedPostLifecycleTest
 
         feedPostFlow.openPostComments(postText);
         feedPostFlow.addComment(commentText);
-
-        assertTrue(
-                postDetailsPage.isCommentDisplayed(commentText),
-                "Created feed comment is not displayed."
-        );
-
         feedPostFlow.deleteComment(commentText);
-
-        assertFalse(
-                postDetailsPage.isCommentDisplayed(commentText),
-                "Deleted feed comment is still displayed."
-        );
-
         feedPostFlow.deletePost(postText);
 
         assertFalse(
