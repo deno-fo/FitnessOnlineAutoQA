@@ -20,8 +20,18 @@ public class IosFeedPostFlow {
     private final IosTutorialOverlay tutorialOverlay;
 
     public IosFeedPostFlow(IOSDriver driver) {
+        this(
+                driver,
+                new FeedPage(driver)
+        );
+    }
+
+    public IosFeedPostFlow(
+            IOSDriver driver,
+            FeedPage feedPage
+    ) {
         this.driver = driver;
-        feedPage = new FeedPage(driver);
+        this.feedPage = feedPage;
         newPostPage = new NewPostPage(driver);
         postDetailsPage = new PostDetailsPage(driver);
         tutorialOverlay = new IosTutorialOverlay(driver);
