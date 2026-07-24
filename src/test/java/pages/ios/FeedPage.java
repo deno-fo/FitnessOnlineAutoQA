@@ -60,11 +60,11 @@ public class FeedPage extends IosBasePage {
 
         reactionWait = new WebDriverWait(
                 driver,
-                Duration.ofSeconds(5)
+                Duration.ofSeconds(3)
         );
 
         reactionWait.pollingEvery(
-                Duration.ofMillis(100)
+                Duration.ofMillis(400)
         );
     }
 
