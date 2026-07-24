@@ -13,6 +13,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 public class FeedPage extends IosBasePage {
 
@@ -20,10 +21,11 @@ public class FeedPage extends IosBasePage {
     private static final int DISLIKE_INDEX = 1;
     private static final int COMMENTS_INDEX = 2;
 
-    private final WebDriverWait fastWait;
+    private final WebDriverWait actionWait;
+    private final WebDriverWait reactionWait;
 
     private String cachedPostText;
-    private PostActions cachedPostActions;
+    private PostActionPoints cachedPostActionPoints;
 
     private final By feedTab =
             AppiumBy.accessibilityId("Feed");
@@ -47,23 +49,35 @@ public class FeedPage extends IosBasePage {
     public FeedPage(IOSDriver driver) {
         super(driver);
 
-        fastWait = new WebDriverWait(
+        actionWait = new WebDriverWait(
                 driver,
                 Duration.ofSeconds(2)
         );
 
-        fastWait.pollingEvery(
+        actionWait.pollingEvery(
+                Duration.ofMillis(100)
+        );
+
+        reactionWait = new WebDriverWait(
+                driver,
+                Duration.ofSeconds(5)
+        );
+
+        reactionWait.pollingEvery(
                 Duration.ofMillis(100)
         );
     }
 
-    public void openFeed() {
+    public void tapFeedTab() {
         wait.until(
                 ExpectedConditions.elementToBeClickable(
                         feedTab
                 )
         ).click();
+    }
 
+    public void openFeed() {
+        tapFeedTab();
         waitUntilReady();
     }
 
@@ -92,12 +106,13 @@ public class FeedPage extends IosBasePage {
     public void waitUntilPostReady(
             String postText
     ) {
-        cachedPostActions = wait.until(
+        PostActionSnapshot snapshot = wait.until(
                 currentDriver ->
-                        findPostActionsNow(postText)
+                        findPostActionSnapshotNow(postText)
         );
 
         cachedPostText = postText;
+        cachedPostActionPoints = snapshot.points();
     }
 
     public boolean isPostDisplayed(
@@ -110,29 +125,29 @@ public class FeedPage extends IosBasePage {
     public void waitUntilPostDisappears(
             String postText
     ) {
-        fastWait.until(currentDriver ->
+        actionWait.until(currentDriver ->
                 findPostCellNow(postText) == null
         );
 
-        clearCachedActions(postText);
+        clearCachedActionPoints(postText);
     }
 
     public void likePost(String postText) {
-        clickPostAction(
+        tapPostAction(
                 postText,
                 LIKE_INDEX
         );
     }
 
     public void dislikePost(String postText) {
-        clickPostAction(
+        tapPostAction(
                 postText,
                 DISLIKE_INDEX
         );
     }
 
     public void openPostComments(String postText) {
-        clickPostAction(
+        tapPostAction(
                 postText,
                 COMMENTS_INDEX
         );
@@ -143,16 +158,24 @@ public class FeedPage extends IosBasePage {
             String expectedLikes,
             String expectedDislikes
     ) {
-        return fastWait.until(currentDriver -> {
+        return reactionWait.until(currentDriver -> {
             try {
-                PostActions actions =
-                        getCachedActions(postText);
+                PostActionSnapshot snapshot =
+                        findPostActionSnapshotNow(
+                                postText
+                        );
 
-                String likes =
-                        actionCount(actions.like());
+                if (snapshot == null) {
+                    return null;
+                }
 
-                String dislikes =
-                        actionCount(actions.dislike());
+                String likes = actionCount(
+                        snapshot.elements().like()
+                );
+
+                String dislikes = actionCount(
+                        snapshot.elements().dislike()
+                );
 
                 if (!expectedLikes.equals(likes)
                         || !expectedDislikes.equals(
@@ -160,6 +183,10 @@ public class FeedPage extends IosBasePage {
                 )) {
                     return null;
                 }
+
+                cachedPostText = postText;
+                cachedPostActionPoints =
+                        snapshot.points();
 
                 return new ReactionCounts(
                         likes,
@@ -169,56 +196,49 @@ public class FeedPage extends IosBasePage {
             } catch (
                     StaleElementReferenceException ignored
             ) {
-                refreshCachedActions(postText);
                 return null;
             }
         });
     }
 
-    private void clickPostAction(
+    private void tapPostAction(
             String postText,
             int index
     ) {
-        try {
-            actionByIndex(
-                    getCachedActions(postText),
-                    index
-            ).click();
+        ActionPoint point = actionPointByIndex(
+                getCachedActionPoints(postText),
+                index
+        );
 
-        } catch (StaleElementReferenceException ignored) {
-            refreshCachedActions(postText);
-
-            actionByIndex(
-                    getCachedActions(postText),
-                    index
-            ).click();
-        }
+        driver.executeScript(
+                "mobile: tap",
+                Map.of(
+                        "x", point.x(),
+                        "y", point.y()
+                )
+        );
     }
 
-    private PostActions getCachedActions(
+    private PostActionPoints getCachedActionPoints(
             String postText
     ) {
         if (postText.equals(cachedPostText)
-                && cachedPostActions != null) {
-            return cachedPostActions;
+                && cachedPostActionPoints != null) {
+            return cachedPostActionPoints;
         }
 
-        refreshCachedActions(postText);
-        return cachedPostActions;
-    }
-
-    private void refreshCachedActions(
-            String postText
-    ) {
-        cachedPostActions = fastWait.until(
+        PostActionSnapshot snapshot = actionWait.until(
                 currentDriver ->
-                        findPostActionsNow(postText)
+                        findPostActionSnapshotNow(postText)
         );
 
         cachedPostText = postText;
+        cachedPostActionPoints = snapshot.points();
+
+        return cachedPostActionPoints;
     }
 
-    private void clearCachedActions(
+    private void clearCachedActionPoints(
             String postText
     ) {
         if (!postText.equals(cachedPostText)) {
@@ -226,17 +246,17 @@ public class FeedPage extends IosBasePage {
         }
 
         cachedPostText = null;
-        cachedPostActions = null;
+        cachedPostActionPoints = null;
     }
 
-    private WebElement actionByIndex(
-            PostActions actions,
+    private ActionPoint actionPointByIndex(
+            PostActionPoints points,
             int index
     ) {
         return switch (index) {
-            case LIKE_INDEX -> actions.like();
-            case DISLIKE_INDEX -> actions.dislike();
-            case COMMENTS_INDEX -> actions.comments();
+            case LIKE_INDEX -> points.like();
+            case DISLIKE_INDEX -> points.dislike();
+            case COMMENTS_INDEX -> points.comments();
             default -> throw new IllegalArgumentException(
                     "Unsupported feed action index: "
                             + index
@@ -244,7 +264,7 @@ public class FeedPage extends IosBasePage {
         };
     }
 
-    private PostActions findPostActionsNow(
+    private PostActionSnapshot findPostActionSnapshotNow(
             String postText
     ) {
         WebElement postCell =
@@ -254,17 +274,33 @@ public class FeedPage extends IosBasePage {
             return null;
         }
 
-        List<WebElement> actions =
-                findPostActionButtons(postCell);
+        List<LocatedAction> actions =
+                findPostActions(postCell);
 
         if (actions.size() < 3) {
             return null;
         }
 
-        return new PostActions(
-                actions.get(LIKE_INDEX),
-                actions.get(DISLIKE_INDEX),
-                actions.get(COMMENTS_INDEX)
+        LocatedAction like =
+                actions.get(LIKE_INDEX);
+
+        LocatedAction dislike =
+                actions.get(DISLIKE_INDEX);
+
+        LocatedAction comments =
+                actions.get(COMMENTS_INDEX);
+
+        return new PostActionSnapshot(
+                new PostActionElements(
+                        like.element(),
+                        dislike.element(),
+                        comments.element()
+                ),
+                new PostActionPoints(
+                        centerOf(like.bounds()),
+                        centerOf(dislike.bounds()),
+                        centerOf(comments.bounds())
+                )
         );
     }
 
@@ -281,7 +317,7 @@ public class FeedPage extends IosBasePage {
                 : cells.get(0);
     }
 
-    private List<WebElement> findPostActionButtons(
+    private List<LocatedAction> findPostActions(
             WebElement postCell
     ) {
         Rectangle cellBounds =
@@ -292,7 +328,7 @@ public class FeedPage extends IosBasePage {
                         + cellBounds.getHeight()
                         - 70;
 
-        List<WebElement> actions =
+        List<LocatedAction> actions =
                 new ArrayList<>();
 
         for (WebElement button :
@@ -303,7 +339,12 @@ public class FeedPage extends IosBasePage {
 
                 if (bounds.getY() >= actionRowTop
                         && bounds.getX() < 220) {
-                    actions.add(button);
+                    actions.add(
+                            new LocatedAction(
+                                    button,
+                                    bounds
+                            )
+                    );
                 }
 
             } catch (
@@ -315,13 +356,24 @@ public class FeedPage extends IosBasePage {
 
         actions.sort(
                 Comparator.comparingInt(
-                        button -> button
-                                .getRect()
+                        action -> action
+                                .bounds()
                                 .getX()
                 )
         );
 
         return actions;
+    }
+
+    private ActionPoint centerOf(
+            Rectangle bounds
+    ) {
+        return new ActionPoint(
+                bounds.getX()
+                        + bounds.getWidth() / 2,
+                bounds.getY()
+                        + bounds.getHeight() / 2
+        );
     }
 
     private String actionCount(
@@ -345,10 +397,35 @@ public class FeedPage extends IosBasePage {
         );
     }
 
-    private record PostActions(
+    private record LocatedAction(
+            WebElement element,
+            Rectangle bounds
+    ) {
+    }
+
+    private record ActionPoint(
+            int x,
+            int y
+    ) {
+    }
+
+    private record PostActionElements(
             WebElement like,
             WebElement dislike,
             WebElement comments
+    ) {
+    }
+
+    private record PostActionPoints(
+            ActionPoint like,
+            ActionPoint dislike,
+            ActionPoint comments
+    ) {
+    }
+
+    private record PostActionSnapshot(
+            PostActionElements elements,
+            PostActionPoints points
     ) {
     }
 
