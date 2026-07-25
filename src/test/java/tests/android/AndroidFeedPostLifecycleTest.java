@@ -1,24 +1,29 @@
 package tests.android;
 
 import annotations.AndroidDeviceTest;
-import components.android.AndroidNotificationPermissionDialog;
 import flows.android.AccountDeletionFlow;
+import flows.android.AndroidOnboardingFlow;
 import flows.android.FeedPostFlow;
 import flows.android.GoogleHealthAccessFlow;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import pages.android.*;
+import pages.android.EmailRegistrationPage;
+import pages.android.FeedPage;
+import pages.android.LoginPage;
+import pages.android.PostDetailsPage;
 import utils.TestData;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class AndroidFeedPostLifecycleTest extends BaseAndroidTest {
+public class AndroidFeedPostLifecycleTest
+        extends BaseAndroidTest {
 
     private LoginPage loginPage;
     private EmailRegistrationPage emailRegistrationPage;
     private GoogleHealthAccessFlow googleHealthAccessFlow;
-    private BodyParametersPage bodyParametersPage;
-    private AndroidNotificationPermissionDialog notificationPermissionDialog;
+    private AndroidOnboardingFlow onboardingFlow;
 
     private FeedPostFlow feedPostFlow;
     private FeedPage feedPage;
@@ -37,11 +42,8 @@ public class AndroidFeedPostLifecycleTest extends BaseAndroidTest {
         googleHealthAccessFlow =
                 new GoogleHealthAccessFlow(driver);
 
-        bodyParametersPage =
-                new BodyParametersPage(driver);
-
-        notificationPermissionDialog =
-                new AndroidNotificationPermissionDialog(driver);
+        onboardingFlow =
+                new AndroidOnboardingFlow(driver);
 
         feedPostFlow =
                 new FeedPostFlow(driver);
@@ -141,8 +143,8 @@ public class AndroidFeedPostLifecycleTest extends BaseAndroidTest {
                 healthConnectAvailable
         );
 
-        bodyParametersPage.continueWithDefaultValues();
-        notificationPermissionDialog.allowNotifications();
+        onboardingFlow
+                .completeRegistrationWithDefaultUserData();
     }
 
     @AfterEach
