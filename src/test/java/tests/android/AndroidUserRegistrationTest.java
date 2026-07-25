@@ -2,37 +2,52 @@ package tests.android;
 
 import annotations.AndroidDeviceTest;
 import annotations.RequiresGoogleHealth;
-import components.android.AndroidNotificationPermissionDialog;
 import flows.android.AccountDeletionFlow;
+import flows.android.AndroidOnboardingFlow;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import pages.android.*;
+import pages.android.EmailRegistrationPage;
+import pages.android.GoogleHealthPage;
+import pages.android.HealthPermissionsPage;
+import pages.android.LoginPage;
+import pages.android.MainPage;
 import utils.TestData;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class AndroidUserRegistrationTest extends BaseAndroidTest {
+public class AndroidUserRegistrationTest
+        extends BaseAndroidTest {
 
     private LoginPage loginPage;
     private EmailRegistrationPage emailRegistrationPage;
     private GoogleHealthPage googleHealthPage;
     private HealthPermissionsPage healthPermissionsPage;
-    private BodyParametersPage bodyParametersPage;
-    private AndroidNotificationPermissionDialog notificationPermissionDialog;
+    private AndroidOnboardingFlow onboardingFlow;
     private MainPage mainPage;
     private AccountDeletionFlow accountDeletionFlow;
 
     @BeforeEach
     public void createPages() {
-        loginPage = new LoginPage(driver);
-        emailRegistrationPage = new EmailRegistrationPage(driver);
-        googleHealthPage = new GoogleHealthPage(driver);
-        healthPermissionsPage = new HealthPermissionsPage(driver);
-        bodyParametersPage = new BodyParametersPage(driver);
-        notificationPermissionDialog =
-                new AndroidNotificationPermissionDialog(driver);
-        mainPage = new MainPage(driver);
-        accountDeletionFlow = new AccountDeletionFlow(driver);
+        loginPage =
+                new LoginPage(driver);
+
+        emailRegistrationPage =
+                new EmailRegistrationPage(driver);
+
+        googleHealthPage =
+                new GoogleHealthPage(driver);
+
+        healthPermissionsPage =
+                new HealthPermissionsPage(driver);
+
+        onboardingFlow =
+                new AndroidOnboardingFlow(driver);
+
+        mainPage =
+                new MainPage(driver);
+
+        accountDeletionFlow =
+                new AccountDeletionFlow(driver);
     }
 
     @AndroidDeviceTest
@@ -103,8 +118,8 @@ public class AndroidUserRegistrationTest extends BaseAndroidTest {
     }
 
     private void completeOnboarding() {
-        bodyParametersPage.continueWithDefaultValues();
-        notificationPermissionDialog.allowNotifications();
+        onboardingFlow
+                .completeRegistrationWithDefaultUserData();
     }
 
     private void assertRegisteredUserHomeOpened() {
