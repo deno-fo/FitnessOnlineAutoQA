@@ -1,12 +1,12 @@
 package tests.ios;
 
+import annotations.IosDeviceTest;
 import flows.ios.IosAccountDeletionFlow;
 import flows.ios.IosCustomWorkoutCreationFlow;
 import flows.ios.IosPostLoginFlow;
 import flows.ios.IosWorkoutExecutionFlow;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import pages.ios.EmailRegistrationPage;
 import pages.ios.LoginPage;
 import pages.ios.WorkoutReportPage;
@@ -72,7 +72,7 @@ public class IosCustomWorkoutTest
                 new WorkoutReportPage(driver);
     }
 
-    @Test
+    @IosDeviceTest
     public void shouldCreateAndCompleteCustomWorkout() {
 
         logTime("START TEST");
@@ -157,10 +157,9 @@ public class IosCustomWorkoutTest
                         * 2;
 
         /*
-         /*
- * completeWorkout() возвращает управление
- * только после появления отчёта.
- */
+         * completeWorkout() возвращает управление
+         * только после появления отчёта.
+         */
         logTime("Report opened");
 
         assertEquals(
