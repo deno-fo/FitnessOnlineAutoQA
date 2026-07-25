@@ -7,10 +7,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.openqa.selenium.WebDriverException;
 import utils.AppiumConfig;
 import utils.IosConfig;
-import utils.IosDeviceUtils;
-import java.util.Map;
+import utils.IosDevice;
+import utils.IosDeviceContext;
+
 import java.io.IOException;
 import java.net.URL;
+import java.util.Map;
 
 public abstract class BaseIosTest {
 
@@ -24,9 +26,8 @@ public abstract class BaseIosTest {
         AppiumConfig
                 .ensureServerIsAvailable();
 
-        IosDeviceUtils.IosDevice device =
-                IosDeviceUtils
-                        .getSingleConnectedIphone();
+        IosDevice device =
+                IosDeviceContext.getRequired();
 
         XCUITestOptions options =
                 new XCUITestOptions();
@@ -61,6 +62,16 @@ public abstract class BaseIosTest {
 
         options.setUpdatedWdaBundleId(
                 IosConfig.WDA_BUNDLE_ID
+        );
+
+        options.setCapability(
+                "appium:wdaLocalPort",
+                device.wdaLocalPort()
+        );
+
+        options.setCapability(
+                "appium:derivedDataPath",
+                device.derivedDataPath()
         );
 
         options.setCapability(
