@@ -1,13 +1,18 @@
 package tests.android;
 
 import annotations.AndroidDeviceTest;
-import components.android.AndroidNotificationPermissionDialog;
 import flows.android.AccountDeletionFlow;
+import flows.android.AndroidOnboardingFlow;
 import flows.android.CustomWorkoutCreationFlow;
 import flows.android.GoogleHealthAccessFlow;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import pages.android.*;
+import pages.android.EmailRegistrationPage;
+import pages.android.ExerciseSettingsPage;
+import pages.android.LoginPage;
+import pages.android.WorkoutDayDetailsPage;
+import pages.android.WorkoutDayEditorPage;
+import pages.android.WorkoutDaysPage;
 import utils.TestData;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,9 +24,7 @@ public class AndroidWorkoutDayEditAndDeleteTest
     private LoginPage loginPage;
     private EmailRegistrationPage emailRegistrationPage;
     private GoogleHealthAccessFlow googleHealthAccessFlow;
-    private BodyParametersPage bodyParametersPage;
-    private AndroidNotificationPermissionDialog
-            notificationPermissionDialog;
+    private AndroidOnboardingFlow onboardingFlow;
 
     private CustomWorkoutCreationFlow
             customWorkoutCreationFlow;
@@ -41,10 +44,8 @@ public class AndroidWorkoutDayEditAndDeleteTest
                 new EmailRegistrationPage(driver);
         googleHealthAccessFlow =
                 new GoogleHealthAccessFlow(driver);
-        bodyParametersPage =
-                new BodyParametersPage(driver);
-        notificationPermissionDialog =
-                new AndroidNotificationPermissionDialog(driver);
+        onboardingFlow =
+                new AndroidOnboardingFlow(driver);
         customWorkoutCreationFlow =
                 new CustomWorkoutCreationFlow(driver);
         workoutDaysPage =
@@ -144,17 +145,20 @@ public class AndroidWorkoutDayEditAndDeleteTest
     private void registerNewUserWithGoogleHealth() {
         loginPage.skipWelcomeScreen();
         loginPage.openEmailAuthentication();
+
         emailRegistrationPage.registerMaleUser(
                 TestData.uniqueEmail(),
                 TestData.PASSWORD,
                 TestData.NAME,
                 TestData.SURNAME
         );
+
         googleHealthAccessFlow.continueDependingOnAvailability(
                 healthConnectAvailable
         );
-        bodyParametersPage.continueWithDefaultValues();
-        notificationPermissionDialog.allowNotifications();
+
+        onboardingFlow
+                .completeRegistrationWithDefaultUserData();
     }
 
     @AfterEach
