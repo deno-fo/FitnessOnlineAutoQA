@@ -59,4 +59,10 @@ public class PreMadeWorkoutSelectionFlow extends AndroidBasePage {
                 )
         ).click();
     }
+
+    public boolean isReady() {
+        return isReadyWithoutWait(
+                generalMuscleBuildingProgram
+        );
+    }
 }

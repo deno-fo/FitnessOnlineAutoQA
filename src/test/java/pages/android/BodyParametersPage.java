@@ -20,4 +20,10 @@ public class BodyParametersPage extends AndroidBasePage {
                 )
         ).click();
     }
+
+    public boolean isReady() {
+        return isReadyWithoutWait(
+                continueButton
+        );
+    }
 }

@@ -1,5 +1,7 @@
 package utils;
 
+import java.util.UUID;
+
 public class TestData {
 
     public static final String PASSWORD =
@@ -47,18 +49,24 @@ public class TestData {
 
     public static String uniqueEmail() {
         return "autotest_"
-                + System.currentTimeMillis()
+                + uniqueId()
                 + "@sign.com";
     }
 
     public static String uniqueFeedPostText() {
         return "Auto feed post "
-                + System.currentTimeMillis();
+                + uniqueId();
     }
 
     public static String uniqueFeedCommentText() {
         return "Auto feed comment "
-                + System.currentTimeMillis();
+                + uniqueId();
+    }
+
+    private static String uniqueId() {
+        return UUID.randomUUID()
+                .toString()
+                .replace("-", "");
     }
 
     private TestData() {

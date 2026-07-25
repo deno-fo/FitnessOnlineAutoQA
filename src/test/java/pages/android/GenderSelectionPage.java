@@ -30,4 +30,20 @@ public class GenderSelectionPage extends AndroidBasePage {
                 )
         ).click();
     }
+
+    public boolean isMaleSelectionReady() {
+        return driver.findElements(maleBanner)
+                .stream()
+                .anyMatch(
+                        element ->
+                                element.isDisplayed()
+                                        && element.isEnabled()
+                );
+    }
+
+    public boolean isReady() {
+        return isReadyWithoutWait(
+                maleBanner
+        );
+    }
 }

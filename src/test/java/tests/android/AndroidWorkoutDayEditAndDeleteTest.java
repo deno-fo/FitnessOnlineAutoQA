@@ -1,24 +1,17 @@
 package tests.android;
 
-import org.junit.jupiter.api.Test;
-import utils.TestData;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
+import annotations.AndroidDeviceTest;
 import components.android.AndroidNotificationPermissionDialog;
 import flows.android.AccountDeletionFlow;
 import flows.android.CustomWorkoutCreationFlow;
 import flows.android.GoogleHealthAccessFlow;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import pages.android.BodyParametersPage;
-import pages.android.EmailRegistrationPage;
-import pages.android.ExerciseSettingsPage;
-import pages.android.LoginPage;
-import pages.android.WorkoutDayDetailsPage;
-import pages.android.WorkoutDayEditorPage;
-import pages.android.WorkoutDaysPage;
+import pages.android.*;
+import utils.TestData;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AndroidWorkoutDayEditAndDeleteTest
         extends BaseAndroidTest {
@@ -66,7 +59,7 @@ public class AndroidWorkoutDayEditAndDeleteTest
                 new AccountDeletionFlow(driver);
     }
 
-    @Test
+    @AndroidDeviceTest
     public void shouldEditAndDeleteWorkoutDay() {
 
         registerNewUserWithGoogleHealth();

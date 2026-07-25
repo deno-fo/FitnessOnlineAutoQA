@@ -1,13 +1,11 @@
 package tests.android;
 
+import annotations.AndroidDeviceTest;
 import annotations.RequiresGoogleHealth;
-import components.android.AndroidNotificationPermissionDialog;
 import flows.android.AccountDeletionFlow;
+import flows.android.AndroidOnboardingFlow;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import pages.android.BodyParametersPage;
-import pages.android.GenderSelectionPage;
 import pages.android.GoogleHealthPage;
 import pages.android.HealthPermissionsPage;
 import pages.android.LoginPage;
@@ -16,31 +14,38 @@ import pages.android.MainPage;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class AndroidGuestAccountCreationTest extends BaseAndroidTest {
+public class AndroidGuestAccountCreationTest
+        extends BaseAndroidTest {
 
     private LoginPage loginPage;
     private HealthPermissionsPage healthPermissionsPage;
     private GoogleHealthPage googleHealthPage;
-    private GenderSelectionPage genderSelectionPage;
-    private BodyParametersPage bodyParametersPage;
-    private AndroidNotificationPermissionDialog notificationPermissionDialog;
+    private AndroidOnboardingFlow onboardingFlow;
     private MainPage mainPage;
     private AccountDeletionFlow accountDeletionFlow;
 
     @BeforeEach
     public void createPages() {
-        loginPage = new LoginPage(driver);
-        healthPermissionsPage = new HealthPermissionsPage(driver);
-        googleHealthPage = new GoogleHealthPage(driver);
-        genderSelectionPage = new GenderSelectionPage(driver);
-        bodyParametersPage = new BodyParametersPage(driver);
-        notificationPermissionDialog =
-                new AndroidNotificationPermissionDialog(driver);
-        mainPage = new MainPage(driver);
-        accountDeletionFlow = new AccountDeletionFlow(driver);
+        loginPage =
+                new LoginPage(driver);
+
+        healthPermissionsPage =
+                new HealthPermissionsPage(driver);
+
+        googleHealthPage =
+                new GoogleHealthPage(driver);
+
+        onboardingFlow =
+                new AndroidOnboardingFlow(driver);
+
+        mainPage =
+                new MainPage(driver);
+
+        accountDeletionFlow =
+                new AccountDeletionFlow(driver);
     }
 
-    @Test
+    @AndroidDeviceTest
     @RequiresGoogleHealth
     public void shouldCompleteGuestOnboardingWithGoogleHealth() {
         loginPage.enterGuestMode();
@@ -54,7 +59,7 @@ public class AndroidGuestAccountCreationTest extends BaseAndroidTest {
         assertGuestHomeScreenOpened();
     }
 
-    @Test
+    @AndroidDeviceTest
     public void shouldCompleteGuestOnboardingAfterSkippingGoogleHealthInApp() {
         loginPage.enterGuestMode();
 
@@ -67,7 +72,7 @@ public class AndroidGuestAccountCreationTest extends BaseAndroidTest {
         assertGuestHomeScreenOpened();
     }
 
-    @Test
+    @AndroidDeviceTest
     @RequiresGoogleHealth
     public void shouldCompleteGuestOnboardingAfterDenyingGoogleHealthInSystemDialog() {
         loginPage.enterGuestMode();
@@ -82,9 +87,8 @@ public class AndroidGuestAccountCreationTest extends BaseAndroidTest {
     }
 
     private void completeOnboardingWithDefaultUserData() {
-        genderSelectionPage.selectMale();
-        bodyParametersPage.continueWithDefaultValues();
-        notificationPermissionDialog.allowNotifications();
+        onboardingFlow
+                .completeGuestWithDefaultUserData();
     }
 
     private void assertGuestHomeScreenOpened() {

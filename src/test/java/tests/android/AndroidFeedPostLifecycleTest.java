@@ -1,22 +1,16 @@
 package tests.android;
 
+import annotations.AndroidDeviceTest;
 import components.android.AndroidNotificationPermissionDialog;
 import flows.android.AccountDeletionFlow;
 import flows.android.FeedPostFlow;
 import flows.android.GoogleHealthAccessFlow;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import pages.android.BodyParametersPage;
-import pages.android.EmailRegistrationPage;
-import pages.android.FeedPage;
-import pages.android.LoginPage;
-import pages.android.PostDetailsPage;
+import pages.android.*;
 import utils.TestData;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AndroidFeedPostLifecycleTest extends BaseAndroidTest {
 
@@ -62,7 +56,7 @@ public class AndroidFeedPostLifecycleTest extends BaseAndroidTest {
                 new AccountDeletionFlow(driver);
     }
 
-    @Test
+    @AndroidDeviceTest
     public void shouldCreateInteractWithAndDeleteFeedPost() {
         registerNewUser();
 

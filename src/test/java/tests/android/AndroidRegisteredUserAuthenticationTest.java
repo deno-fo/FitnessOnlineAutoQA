@@ -1,17 +1,13 @@
 package tests.android;
 
+import annotations.AndroidDeviceTest;
 import annotations.RequiresGoogleHealth;
 import components.android.AndroidNotificationPermissionDialog;
 import components.android.TutorialOverlay;
 import flows.android.LogoutFlow;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import pages.android.EmailAuthPage;
-import pages.android.GoogleHealthPage;
-import pages.android.HealthPermissionsPage;
-import pages.android.LoginPage;
-import pages.android.MainPage;
+import pages.android.*;
 import utils.TestData;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -47,7 +43,7 @@ public class AndroidRegisteredUserAuthenticationTest
         userLoggedIn = false;
     }
 
-    @Test
+    @AndroidDeviceTest
     @RequiresGoogleHealth
     public void shouldSignInRegisteredUserWithGoogleHealth() {
         openEmailLoginForm();
@@ -67,7 +63,7 @@ public class AndroidRegisteredUserAuthenticationTest
         userLoggedIn = true;
     }
 
-    @Test
+    @AndroidDeviceTest
     public void shouldSignInRegisteredUserAfterSkippingGoogleHealthInApp() {
         signInAfterSkippingGoogleHealth();
 
@@ -75,7 +71,7 @@ public class AndroidRegisteredUserAuthenticationTest
         userLoggedIn = true;
     }
 
-    @Test
+    @AndroidDeviceTest
     @RequiresGoogleHealth
     public void shouldSignInRegisteredUserAfterDenyingGoogleHealthInSystemDialog() {
         openEmailLoginForm();
@@ -95,7 +91,7 @@ public class AndroidRegisteredUserAuthenticationTest
         userLoggedIn = true;
     }
 
-    @Test
+    @AndroidDeviceTest
     public void shouldShowErrorForInvalidCredentials() {
         openEmailLoginForm();
 

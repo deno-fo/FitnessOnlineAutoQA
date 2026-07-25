@@ -1,17 +1,12 @@
 package tests.android;
 
+import annotations.AndroidDeviceTest;
 import annotations.RequiresGoogleHealth;
 import components.android.AndroidNotificationPermissionDialog;
 import flows.android.AccountDeletionFlow;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import pages.android.BodyParametersPage;
-import pages.android.EmailRegistrationPage;
-import pages.android.GoogleHealthPage;
-import pages.android.HealthPermissionsPage;
-import pages.android.LoginPage;
-import pages.android.MainPage;
+import pages.android.*;
 import utils.TestData;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -40,7 +35,7 @@ public class AndroidUserRegistrationTest extends BaseAndroidTest {
         accountDeletionFlow = new AccountDeletionFlow(driver);
     }
 
-    @Test
+    @AndroidDeviceTest
     @RequiresGoogleHealth
     public void shouldRegisterUserWithGoogleHealth() {
         openEmailRegistrationForm();
@@ -61,7 +56,7 @@ public class AndroidUserRegistrationTest extends BaseAndroidTest {
         assertRegisteredUserHomeOpened();
     }
 
-    @Test
+    @AndroidDeviceTest
     public void shouldRegisterUserAfterSkippingGoogleHealthInApp() {
         openEmailRegistrationForm();
 
@@ -81,7 +76,7 @@ public class AndroidUserRegistrationTest extends BaseAndroidTest {
         assertRegisteredUserHomeOpened();
     }
 
-    @Test
+    @AndroidDeviceTest
     @RequiresGoogleHealth
     public void shouldRegisterUserAfterDenyingGoogleHealthInSystemDialog() {
         openEmailRegistrationForm();

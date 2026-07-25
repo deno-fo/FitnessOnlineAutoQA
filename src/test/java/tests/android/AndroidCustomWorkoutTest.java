@@ -1,14 +1,13 @@
 package tests.android;
 
-import components.android.AndroidNotificationPermissionDialog;
+import annotations.AndroidDeviceTest;
 import flows.android.AccountDeletionFlow;
+import flows.android.AndroidOnboardingFlow;
 import flows.android.CustomWorkoutCreationFlow;
 import flows.android.GoogleHealthAccessFlow;
 import flows.android.WorkoutExecutionFlow;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import pages.android.BodyParametersPage;
 import pages.android.EmailRegistrationPage;
 import pages.android.LoginPage;
 import pages.android.WorkoutDaysPage;
@@ -18,13 +17,13 @@ import utils.TestData;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class AndroidCustomWorkoutTest extends BaseAndroidTest {
+public class AndroidCustomWorkoutTest
+        extends BaseAndroidTest {
 
     private LoginPage loginPage;
     private EmailRegistrationPage emailRegistrationPage;
     private GoogleHealthAccessFlow googleHealthAccessFlow;
-    private BodyParametersPage bodyParametersPage;
-    private AndroidNotificationPermissionDialog notificationPermissionDialog;
+    private AndroidOnboardingFlow onboardingFlow;
 
     private CustomWorkoutCreationFlow customWorkoutCreationFlow;
     private WorkoutDaysPage workoutDaysPage;
@@ -44,11 +43,8 @@ public class AndroidCustomWorkoutTest extends BaseAndroidTest {
         googleHealthAccessFlow =
                 new GoogleHealthAccessFlow(driver);
 
-        bodyParametersPage =
-                new BodyParametersPage(driver);
-
-        notificationPermissionDialog =
-                new AndroidNotificationPermissionDialog(driver);
+        onboardingFlow =
+                new AndroidOnboardingFlow(driver);
 
         customWorkoutCreationFlow =
                 new CustomWorkoutCreationFlow(driver);
@@ -66,9 +62,8 @@ public class AndroidCustomWorkoutTest extends BaseAndroidTest {
                 new AccountDeletionFlow(driver);
     }
 
-    @Test
+    @AndroidDeviceTest
     public void shouldCreateAndCompleteCustomWorkout() {
-
         registerNewUser();
 
         customWorkoutCreationFlow.createWorkoutWithOneExercise(
@@ -130,6 +125,7 @@ public class AndroidCustomWorkoutTest extends BaseAndroidTest {
                 workoutReportPage.isShareButtonDisplayed(),
                 "Report share button is not displayed."
         );
+
         workoutReportPage.closeReport();
     }
 
@@ -148,9 +144,8 @@ public class AndroidCustomWorkoutTest extends BaseAndroidTest {
                 healthConnectAvailable
         );
 
-        bodyParametersPage.continueWithDefaultValues();
-
-        notificationPermissionDialog.allowNotifications();
+        onboardingFlow
+                .completeRegistrationWithDefaultUserData();
     }
 
     @AfterEach
@@ -159,6 +154,7 @@ public class AndroidCustomWorkoutTest extends BaseAndroidTest {
 
         if (accountDeletionFlow != null
                 && accountDeletionFlow.canDeleteAccount()) {
+
             accountDeletionFlow.deleteAccount();
         }
     }

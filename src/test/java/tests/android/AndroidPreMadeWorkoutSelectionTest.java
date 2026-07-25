@@ -1,17 +1,13 @@
 package tests.android;
 
+import annotations.AndroidDeviceTest;
 import components.android.AndroidNotificationPermissionDialog;
 import components.android.TutorialOverlay;
 import flows.android.AccountDeletionFlow;
 import flows.android.PreMadeWorkoutSelectionFlow;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import pages.android.BodyParametersPage;
-import pages.android.EmailRegistrationPage;
-import pages.android.GoogleHealthPage;
-import pages.android.LoginPage;
-import pages.android.MainPage;
+import pages.android.*;
 import utils.TestData;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -40,7 +36,7 @@ public class AndroidPreMadeWorkoutSelectionTest extends BaseAndroidTest {
         accountDeletionFlow = new AccountDeletionFlow(driver);
     }
 
-    @Test
+    @AndroidDeviceTest
     public void shouldSelectPreMadeWorkoutForNewUser() {
 
         loginPage.skipWelcomeScreen();

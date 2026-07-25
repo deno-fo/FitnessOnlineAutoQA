@@ -8,6 +8,9 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import pages.android.AndroidBasePage;
+import org.openqa.selenium.Dimension;
+
+import java.util.Map;
 
 import java.time.Duration;
 
@@ -75,12 +78,7 @@ public class AccountDeletionFlow extends AndroidBasePage {
                 break;
             }
 
-            driver.findElement(
-                    AppiumBy.androidUIAutomator(
-                            "new UiScrollable(new UiSelector().scrollable(true))" +
-                                    ".scrollForward()"
-                    )
-            );
+            scrollSettingsDown();
         }
 
         if (driver.findElements(deleteAccountItem).isEmpty()) {
@@ -125,6 +123,28 @@ public class AccountDeletionFlow extends AndroidBasePage {
                 ExpectedConditions.visibilityOfElementLocated(
                         loginSkipButton
                 )
+        );
+    }
+
+    private void scrollSettingsDown() {
+        Dimension windowSize =
+                driver.manage()
+                        .window()
+                        .getSize();
+
+        Map<String, Object> scrollArguments =
+                Map.of(
+                        "left", 0,
+                        "top", windowSize.height / 5,
+                        "width", windowSize.width,
+                        "height", windowSize.height * 3 / 5,
+                        "direction", "down",
+                        "percent", 0.8
+                );
+
+        driver.executeScript(
+                "mobile: scrollGesture",
+                scrollArguments
         );
     }
 }

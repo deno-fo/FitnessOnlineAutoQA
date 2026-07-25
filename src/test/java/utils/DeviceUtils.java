@@ -76,7 +76,7 @@ public class DeviceUtils {
     private DeviceUtils() {
     }
 
-    public static String getSingleConnectedDeviceUdid()
+    public static List<String> getConnectedDeviceUdids()
             throws IOException, InterruptedException {
 
         Process process =
@@ -103,6 +103,7 @@ public class DeviceUtils {
                         .map(String::trim)
                         .filter(line -> line.endsWith("\tdevice"))
                         .map(line -> line.split("\\s+")[0])
+                        .sorted()
                         .toList();
 
         if (connectedDevices.isEmpty()) {
@@ -113,15 +114,78 @@ public class DeviceUtils {
             );
         }
 
+        return connectedDevices;
+    }
+
+    public static String getSingleConnectedDeviceUdid()
+            throws IOException, InterruptedException {
+
+        String configuredUdid =
+                System.getProperty("android.udid");
+
+        List<String> connectedDevices =
+                getConnectedDeviceUdids();
+
+        if (configuredUdid != null
+                && !configuredUdid.isBlank()) {
+
+            if (!connectedDevices.contains(configuredUdid)) {
+                throw new IllegalStateException(
+                        "Configured Android device is not connected: "
+                                + configuredUdid
+                                + ". Connected devices: "
+                                + connectedDevices
+                );
+            }
+
+            return configuredUdid;
+        }
+
         if (connectedDevices.size() > 1) {
             throw new IllegalStateException(
                     "More than one Android device is connected: "
                             + connectedDevices
-                            + ". Connect only one device for this test run."
+                            + ". Select one using -Dandroid.udid=<UDID> "
+                            + "or use the Android matrix launcher."
             );
         }
 
         return connectedDevices.get(0);
+    }
+
+    public static String getDeviceDisplayName(
+            String deviceUdid
+    ) throws IOException, InterruptedException {
+
+        String configuredDeviceName =
+                readAdbOutput(
+                        "-s",
+                        deviceUdid,
+                        "shell",
+                        "settings",
+                        "get",
+                        "global",
+                        "device_name"
+                );
+
+        if (isUsableDeviceName(configuredDeviceName)) {
+            return configuredDeviceName;
+        }
+
+        String model =
+                readAdbOutput(
+                        "-s",
+                        deviceUdid,
+                        "shell",
+                        "getprop",
+                        "ro.product.model"
+                );
+
+        if (isUsableDeviceName(model)) {
+            return model;
+        }
+
+        return "Android";
     }
 
     public static void clearAppData(
@@ -222,5 +286,36 @@ public class DeviceUtils {
                 deviceUdid,
                 "com.google.android.apps.healthdata"
         );
+    }
+
+    private static String readAdbOutput(
+            String... arguments
+    ) throws IOException, InterruptedException {
+
+        Process process = startAdb(arguments);
+
+        String output = new String(
+                process.getInputStream().readAllBytes(),
+                StandardCharsets.UTF_8
+        ).trim();
+
+        int exitCode = process.waitFor();
+
+        if (exitCode != 0) {
+            throw new IllegalStateException(
+                    "ADB command failed. Output: "
+                            + output
+            );
+        }
+
+        return output;
+    }
+
+    private static boolean isUsableDeviceName(
+            String value
+    ) {
+        return value != null
+                && !value.isBlank()
+                && !"null".equalsIgnoreCase(value);
     }
 }

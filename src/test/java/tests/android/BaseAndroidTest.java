@@ -6,19 +6,24 @@ import io.appium.java_client.android.options.UiAutomator2Options;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
-import utils.AndroidConfig;
-import utils.AppiumConfig;
-import utils.DeviceUtils;
+import utils.*;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public abstract class BaseAndroidTest {
 
+    private static final int SYSTEM_PORT_BASE = 8200;
+    private static final int SYSTEM_PORT_MAX = 8299;
+
     protected AndroidDriver driver;
     protected boolean healthConnectAvailable;
+
+    protected String deviceUdid;
+    protected int systemPort;
 
     @BeforeEach
     public void setUp(TestInfo testInfo)
@@ -26,8 +31,23 @@ public abstract class BaseAndroidTest {
 
         AppiumConfig.ensureServerIsAvailable();
 
-        String deviceUdid =
-                DeviceUtils.getSingleConnectedDeviceUdid();
+        AndroidDevice assignedDevice =
+                AndroidDeviceContext.get();
+
+        if (assignedDevice != null) {
+            deviceUdid =
+                    assignedDevice.udid();
+
+            systemPort =
+                    assignedDevice.systemPort();
+        } else {
+            deviceUdid =
+                    DeviceUtils.getSingleConnectedDeviceUdid();
+
+            systemPort =
+                    resolveSystemPort(deviceUdid);
+        }
+
         ensureFitnessOnlineIsInstalled(deviceUdid);
 
         healthConnectAvailable =
@@ -35,6 +55,27 @@ public abstract class BaseAndroidTest {
                         deviceUdid
                 );
 
+        ensureGoogleHealthRequirementIsMet(testInfo);
+
+        DeviceUtils.clearAppData(
+                deviceUdid,
+                AndroidConfig.APP_PACKAGE
+        );
+
+        UiAutomator2Options options =
+                createDriverOptions();
+
+        logSessionConfiguration();
+
+        driver = new AndroidDriver(
+                new URL(AppiumConfig.SERVER_URL),
+                options
+        );
+    }
+
+    private void ensureGoogleHealthRequirementIsMet(
+            TestInfo testInfo
+    ) {
         boolean googleHealthRequired =
                 testInfo.getTestMethod()
                         .map(method -> method.isAnnotationPresent(
@@ -42,21 +83,21 @@ public abstract class BaseAndroidTest {
                         ))
                         .orElse(false);
 
-        if (googleHealthRequired) {
-            assumeTrue(
-                    healthConnectAvailable,
-                    "Google Health is required for this test, "
-                            + "but it is not available on this device. "
-                            + "Android API level is below 34 and "
-                            + "Health Connect app is not installed."
-            );
+        if (!googleHealthRequired) {
+            return;
         }
 
-        DeviceUtils.clearAppData(
-                deviceUdid,
-                AndroidConfig.APP_PACKAGE
+        assumeTrue(
+                healthConnectAvailable,
+                "Google Health is required for this test, "
+                        + "but it is not available on device "
+                        + deviceUdid
+                        + ". Android API level is below 34 and "
+                        + "Health Connect app is not installed."
         );
+    }
 
+    private UiAutomator2Options createDriverOptions() {
         UiAutomator2Options options =
                 new UiAutomator2Options();
 
@@ -75,14 +116,126 @@ public abstract class BaseAndroidTest {
         options.setNoReset(true);
 
         options.setCapability(
+                "appium:systemPort",
+                systemPort
+        );
+
+        options.setCapability(
                 "appium:forceAppLaunch",
                 true
         );
 
-        driver = new AndroidDriver(
-                new URL(AppiumConfig.SERVER_URL),
-                options
+        return options;
+    }
+
+    private void logSessionConfiguration() {
+        System.out.println(
+                "[Android test session] device="
+                        + deviceUdid
+                        + ", systemPort="
+                        + systemPort
         );
+    }
+
+    private static int resolveSystemPort(
+            String deviceUdid
+    ) throws IOException, InterruptedException {
+
+        String configuredPort =
+                System.getProperty("android.systemPort");
+
+        if (configuredPort != null
+                && !configuredPort.isBlank()) {
+
+            return parseSystemPort(configuredPort);
+        }
+
+        return resolveAutomaticSystemPort(deviceUdid);
+    }
+
+    private static int resolveAutomaticSystemPort(
+            String deviceUdid
+    ) throws IOException, InterruptedException {
+
+        List<String> connectedDevices =
+                DeviceUtils.getConnectedDeviceUdids();
+
+        int deviceIndex =
+                connectedDevices.indexOf(deviceUdid);
+
+        ensureDeviceIsConnected(
+                deviceUdid,
+                deviceIndex
+        );
+
+        return calculateAutomaticSystemPort(
+                deviceIndex
+        );
+    }
+
+    private static void ensureDeviceIsConnected(
+            String deviceUdid,
+            int deviceIndex
+    ) {
+        if (deviceIndex >= 0) {
+            return;
+        }
+
+        throw new IllegalStateException(
+                "Android device disappeared before "
+                        + "Appium session creation: "
+                        + deviceUdid
+        );
+    }
+
+    private static int calculateAutomaticSystemPort(
+            int deviceIndex
+    ) {
+        int systemPort =
+                SYSTEM_PORT_BASE + deviceIndex;
+
+        if (systemPort <= SYSTEM_PORT_MAX) {
+            return systemPort;
+        }
+
+        throw new IllegalStateException(
+                "Too many Android devices are connected. "
+                        + "Automatic systemPort allocation supports "
+                        + "up to "
+                        + (
+                        SYSTEM_PORT_MAX
+                                - SYSTEM_PORT_BASE
+                                + 1
+                )
+                        + " devices. You may select a port manually "
+                        + "using -Dandroid.systemPort=<PORT>."
+        );
+    }
+
+    private static int parseSystemPort(
+            String rawValue
+    ) {
+        try {
+            int port =
+                    Integer.parseInt(rawValue);
+
+            if (port < 1 || port > 65535) {
+                throw new IllegalArgumentException(
+                        "android.systemPort must be between "
+                                + "1 and 65535, but was "
+                                + port
+                );
+            }
+
+            return port;
+        } catch (NumberFormatException exception) {
+            throw new IllegalArgumentException(
+                    "android.systemPort must be a valid integer, "
+                            + "but was: "
+                            + rawValue,
+                    exception
+            );
+        }
     }
 
     private static void ensureFitnessOnlineIsInstalled(

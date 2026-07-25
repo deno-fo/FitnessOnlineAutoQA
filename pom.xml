@@ -19,6 +19,8 @@
 
         <!-- Mobile tests require a real connected device. -->
         <skip.mobile.tests>true</skip.mobile.tests>
+
+        <qa.build.directory>${project.basedir}/target</qa.build.directory>
     </properties>
 
     <dependencies>
@@ -38,6 +40,8 @@
     </dependencies>
 
     <build>
+        <directory>${qa.build.directory}</directory>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
