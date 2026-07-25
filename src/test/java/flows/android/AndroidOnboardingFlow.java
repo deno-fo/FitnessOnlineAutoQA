@@ -59,15 +59,18 @@ public final class AndroidOnboardingFlow {
         bodyParametersPage
                 .continueWithDefaultValues();
 
-        systemDialogHandler.waitUntil(
-                mainPage::isReady
-        );
+        completeTransitionToMainPage();
     }
 
     public void completeRegistrationWithDefaultUserData() {
-        completeRegistrationWithDefaultUserData(
-                mainPage::isReady
+        systemDialogHandler.waitUntil(
+                bodyParametersPage::isReady
         );
+
+        bodyParametersPage
+                .continueWithDefaultValues();
+
+        completeTransitionToMainPage();
     }
 
     public void completeRegistrationWithDefaultUserData(
@@ -86,10 +89,19 @@ public final class AndroidOnboardingFlow {
     }
 
     public void completeRegisteredUserLogin() {
+        completeTransitionToMainPage();
+    }
+
+    private void completeTransitionToMainPage() {
         systemDialogHandler.waitUntil(
-                mainPage::isReady
+                () -> mainPage.isReady()
+                        || tutorialOverlay.isDisplayed()
         );
 
         tutorialOverlay.dismissIfPresent();
+
+        systemDialogHandler.waitUntil(
+                mainPage::isReady
+        );
     }
 }
