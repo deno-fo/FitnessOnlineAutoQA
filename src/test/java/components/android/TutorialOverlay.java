@@ -21,6 +21,12 @@ public class TutorialOverlay extends AndroidBasePage {
         super(driver);
     }
 
+    public boolean isDisplayed() {
+        return isDisplayedWithoutWait(
+                tutorialCard
+        );
+    }
+
     public void dismiss() {
         wait.until(
                 ExpectedConditions.visibilityOfElementLocated(
