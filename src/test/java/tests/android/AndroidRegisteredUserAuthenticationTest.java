@@ -2,12 +2,15 @@ package tests.android;
 
 import annotations.AndroidDeviceTest;
 import annotations.RequiresGoogleHealth;
-import components.android.AndroidNotificationPermissionDialog;
-import components.android.TutorialOverlay;
+import flows.android.AndroidOnboardingFlow;
 import flows.android.LogoutFlow;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import pages.android.*;
+import pages.android.EmailAuthPage;
+import pages.android.GoogleHealthPage;
+import pages.android.HealthPermissionsPage;
+import pages.android.LoginPage;
+import pages.android.MainPage;
 import utils.TestData;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -19,8 +22,7 @@ public class AndroidRegisteredUserAuthenticationTest
     private EmailAuthPage emailAuthPage;
     private GoogleHealthPage googleHealthPage;
     private HealthPermissionsPage healthPermissionsPage;
-    private AndroidNotificationPermissionDialog notificationPermissionDialog;
-    private TutorialOverlay tutorialOverlay;
+    private AndroidOnboardingFlow onboardingFlow;
     private MainPage mainPage;
     private LogoutFlow logoutFlow;
 
@@ -32,11 +34,7 @@ public class AndroidRegisteredUserAuthenticationTest
         emailAuthPage = new EmailAuthPage(driver);
         googleHealthPage = new GoogleHealthPage(driver);
         healthPermissionsPage = new HealthPermissionsPage(driver);
-
-        notificationPermissionDialog =
-                new AndroidNotificationPermissionDialog(driver);
-
-        tutorialOverlay = new TutorialOverlay(driver);
+        onboardingFlow = new AndroidOnboardingFlow(driver);
         mainPage = new MainPage(driver);
         logoutFlow = new LogoutFlow(driver);
 
@@ -123,8 +121,7 @@ public class AndroidRegisteredUserAuthenticationTest
     }
 
     private void completeLoginOnboarding() {
-        notificationPermissionDialog.allowNotifications();
-        tutorialOverlay.dismissIfPresent();
+        onboardingFlow.completeRegisteredUserLogin();
     }
 
     private void openEmailLoginForm() {
