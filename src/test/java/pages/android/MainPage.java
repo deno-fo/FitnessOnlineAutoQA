@@ -4,7 +4,6 @@ import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
 import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.WebElement;
 
 public class MainPage extends AndroidBasePage {
 
@@ -25,14 +24,6 @@ public class MainPage extends AndroidBasePage {
 
     private final By workoutsTab =
             AppiumBy.accessibilityId("Workouts");
-
-    private boolean isDisplayedWithoutWait(
-            By locator
-    ) {
-        return driver.findElements(locator)
-                .stream()
-                .anyMatch(WebElement::isDisplayed);
-    }
 
     public void openWorkoutsTab() {
         wait.until(
