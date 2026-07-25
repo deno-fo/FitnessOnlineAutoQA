@@ -36,7 +36,8 @@ public class HealthAccessPage
     }
 
     public boolean isHealthScreenDisplayed() {
-        return isDisplayedNow(healthTitle);
+        return isPresentNow(healthTitle)
+                && isPresentNow(grantAccessButton);
     }
 
     public boolean isTurnOnAllButtonDisplayed() {

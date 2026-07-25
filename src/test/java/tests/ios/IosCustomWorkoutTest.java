@@ -19,17 +19,11 @@ public class IosCustomWorkoutTest
         extends BaseIosTest {
 
     private LoginPage loginPage;
-
     private EmailRegistrationPage registrationPage;
-
     private IosCustomWorkoutCreationFlow workoutCreationFlow;
-
     private IosWorkoutExecutionFlow workoutExecutionFlow;
-
     private IosPostLoginFlow postLoginFlow;
-
     private IosAccountDeletionFlow accountDeletionFlow;
-
     private WorkoutReportPage reportPage;
 
     private long testStartTime;

@@ -146,6 +146,17 @@ public class IosWorkoutExecutionFlow {
         dismissAppleWatchWarningIfPresent();
         dismissWorkoutTutorialIfPresent();
 
+        /*
+         * Маленькая контекстная подсказка
+         * tooltip_icon_warning1 может перекрывать
+         * элементы дневника тренировки.
+         *
+         * Закрываем её явно до первого свайпа.
+         */
+        tutorialOverlay.waitAndDismissIfPresent(
+                Duration.ofMillis(300)
+        );
+
         makeSetFieldsVisible();
 
         for (int set = 0;
@@ -262,12 +273,6 @@ public class IosWorkoutExecutionFlow {
             return;
         }
 
-        /*
-         * Способ №2:
-         * тап по реальному accessibility-элементу Yes,
-         * если он существует и не является
-         * гигантским контейнером на весь экран.
-         */
         if (tapYesElementIfPossible()) {
             FinishTapResult result =
                     waitAfterFinishTap(
@@ -305,14 +310,6 @@ public class IosWorkoutExecutionFlow {
             return;
         }
 
-        /*
-         * Способ №4:
-         * экранная координата по Inspector.
-         *
-         * Yes примерно:
-         * 67% ширины;
-         * 46.3% высоты окна приложения.
-         */
         tapByScreenRatio(
                 0.67,
                 0.463
@@ -559,9 +556,7 @@ public class IosWorkoutExecutionFlow {
             return true;
         }
 
-        if (result
-                == FinishTapResult.DIALOG_CLOSED) {
-
+        if (result == FinishTapResult.DIALOG_CLOSED) {
             waitForDestinationAfterDialogClosed();
             return true;
         }

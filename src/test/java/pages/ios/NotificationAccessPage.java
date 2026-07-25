@@ -26,9 +26,8 @@ public class NotificationAccessPage
     }
 
     public boolean isNotificationScreenDisplayed() {
-        return isDisplayedNow(
-                notificationsTitle
-        );
+        return isPresentNow(notificationsTitle)
+                && isPresentNow(grantAccessButton);
     }
 
     public void grantAccess() {

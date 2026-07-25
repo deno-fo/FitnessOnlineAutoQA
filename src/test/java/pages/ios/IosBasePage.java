@@ -31,6 +31,20 @@ public abstract class IosBasePage {
         return findVisibleElementNow(locator) != null;
     }
 
+    protected boolean isPresentNow(
+            By locator
+    ) {
+        try {
+            return !driver
+                    .findElements(locator)
+                    .isEmpty();
+        } catch (
+                StaleElementReferenceException ignored
+        ) {
+            return false;
+        }
+    }
+
     protected WebElement findVisibleElementNow(
             By locator
     ) {
