@@ -59,7 +59,9 @@ public final class AndroidOnboardingFlow {
         bodyParametersPage
                 .continueWithDefaultValues();
 
-        completeTransitionToMainPage();
+        systemDialogHandler.waitUntil(
+                mainPage::isReady
+        );
     }
 
     public void completeRegistrationWithDefaultUserData() {
@@ -98,7 +100,9 @@ public final class AndroidOnboardingFlow {
                         || tutorialOverlay.isDisplayed()
         );
 
-        tutorialOverlay.dismissIfPresent();
+        if (tutorialOverlay.isDisplayed()) {
+            tutorialOverlay.dismiss();
+        }
 
         systemDialogHandler.waitUntil(
                 mainPage::isReady
