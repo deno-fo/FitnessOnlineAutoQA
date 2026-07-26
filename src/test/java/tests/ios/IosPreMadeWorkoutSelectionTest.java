@@ -5,7 +5,7 @@ import flows.ios.IosPostLoginFlow;
 import flows.ios.IosPreMadeWorkoutSelectionFlow;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import annotations.IosDeviceTest;
 import pages.ios.EmailRegistrationPage;
 import pages.ios.LoginPage;
 import utils.TestData;
@@ -43,7 +43,7 @@ public class IosPreMadeWorkoutSelectionTest
                 new IosAccountDeletionFlow(driver);
     }
 
-    @Test
+    @IosDeviceTest
     public void shouldSelectPreMadeWorkoutForNewUser() {
         loginPage.openEmailAuthentication();
 

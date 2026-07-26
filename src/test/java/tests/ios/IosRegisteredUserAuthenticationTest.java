@@ -4,7 +4,7 @@ import flows.ios.IosLogoutFlow;
 import flows.ios.IosPostLoginFlow;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import annotations.IosDeviceTest;
 import pages.ios.EmailAuthPage;
 import pages.ios.LoginPage;
 import pages.ios.MainPage;
@@ -34,7 +34,7 @@ public class IosRegisteredUserAuthenticationTest
         userLoggedIn = false;
     }
 
-    @Test
+    @IosDeviceTest
     public void shouldSignInRegisteredUser() {
         loginPage.openEmailAuthentication();
 
@@ -54,7 +54,7 @@ public class IosRegisteredUserAuthenticationTest
         userLoggedIn = true;
     }
 
-    @Test
+    @IosDeviceTest
     public void shouldShowErrorForInvalidCredentials() {
         loginPage.openEmailAuthentication();
 

@@ -4,7 +4,7 @@ import flows.ios.IosAccountDeletionFlow;
 import flows.ios.IosGuestOnboardingFlow;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import annotations.IosDeviceTest;
 import pages.ios.LoginPage;
 import pages.ios.MainPage;
 
@@ -40,7 +40,7 @@ public class IosGuestAccountCreationTest
         guestAccountCreated = false;
     }
 
-    @Test
+    @IosDeviceTest
     public void shouldCreateGuestAccount() {
         loginPage.enterGuestMode();
         guestSessionStarted = true;

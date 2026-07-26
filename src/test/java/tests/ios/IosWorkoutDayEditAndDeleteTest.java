@@ -6,7 +6,7 @@ import flows.ios.IosPostLoginFlow;
 import flows.ios.IosWorkoutDayEditAndDeleteFlow;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import annotations.IosDeviceTest;
 import pages.ios.EmailRegistrationPage;
 import pages.ios.LoginPage;
 import utils.TestData;
@@ -58,7 +58,7 @@ public class IosWorkoutDayEditAndDeleteTest
                 );
     }
 
-    @Test
+    @IosDeviceTest
     public void shouldEditAndDeleteWorkoutDay() {
         loginPage.openEmailAuthentication();
 

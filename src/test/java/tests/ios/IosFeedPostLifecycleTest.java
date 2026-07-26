@@ -5,7 +5,7 @@ import flows.ios.IosFeedPostFlow;
 import flows.ios.IosPostLoginFlow;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import annotations.IosDeviceTest;
 import pages.ios.EmailRegistrationPage;
 import pages.ios.FeedPage;
 import pages.ios.LoginPage;
@@ -46,7 +46,7 @@ public class IosFeedPostLifecycleTest
                 new IosAccountDeletionFlow(driver);
     }
 
-    @Test
+    @IosDeviceTest
     public void shouldCreateInteractWithAndDeleteFeedPost() {
         registerNewUser();
 
