@@ -1,4 +1,7 @@
 # FitnessOnlineAutoQA
+
+[![Unit checks](https://github.com/deno-fo/FitnessOnlineAutoQA/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/deno-fo/FitnessOnlineAutoQA/actions/workflows/unit-tests.yml)
+
 Appium-автотесты мобильного приложения FitnessOnline для реальных Android- и iOS-устройств.
 
 Проект демонстрирует полный цикл mobile QA automation: от настройки реального
