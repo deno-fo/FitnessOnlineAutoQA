@@ -119,14 +119,14 @@ class CleanupRecoveryTest {
         @Override
         public List<WebElement> findElements(By by) {
             String locator = by.toString();
-            if (screen.startsWith("metrics") && locator.equals("AppiumBy.accessibilityId: Pulse")) {
+            if (screen.startsWith("metrics") && locator.contains("Pulse")) {
                 pulseChecks++;
             }
             String label = switch (screen) {
                 case "metrics delayed", "metrics missing" ->
-                        locator.equals("AppiumBy.accessibilityId: Calories") ? "Calories"
-                        : locator.equals("AppiumBy.accessibilityId: Steps") ? "Steps"
-                        : locator.equals("AppiumBy.accessibilityId: Pulse")
+                        locator.contains("Calories") ? "Calories"
+                        : locator.contains("Steps") ? "Steps"
+                        : locator.contains("Pulse")
                         && screen.equals("metrics delayed") && pulseChecks > 1 ? "Pulse" : null;
                 case "login" -> locator.contains("Sign in/Sign up with email") ? "login" : null;
                 case "form" -> locator.contains("XCUIElementTypeSecureTextField")
@@ -137,7 +137,7 @@ class CleanupRecoveryTest {
                 case "more" -> locator.equals("AppiumBy.accessibilityId: Log out") ? "Log out"
                         : locator.equals("AppiumBy.accessibilityId: Settings") ? "Settings" : null;
                 case "confirm" -> locator.contains("name == 'Logout'") ? "Logout" : null;
-                case "report" -> locator.equals("AppiumBy.accessibilityId: Calories") ? "Calories" : null;
+                case "report" -> locator.contains("Calories") ? "Calories" : null;
                 case "settings" -> locator.equals("AppiumBy.accessibilityId: Delete account") ? "Delete account" : null;
                 case "delete" -> locator.contains("name == 'DELETE'") ? "DELETE" : null;
                 default -> null;

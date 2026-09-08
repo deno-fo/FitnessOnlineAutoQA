@@ -27,20 +27,11 @@ public class WorkoutReportPage
                     "name == '100%'"
             );
 
-    private final By caloriesLabel =
-            AppiumBy.accessibilityId(
-                    "Calories"
-            );
+    private final By caloriesLabel = metricLabel("Calories");
 
-    private final By stepsLabel =
-            AppiumBy.accessibilityId(
-                    "Steps"
-            );
+    private final By stepsLabel = metricLabel("Steps");
 
-    private final By pulseLabel =
-            AppiumBy.accessibilityId(
-                    "Pulse"
-            );
+    private final By pulseLabel = metricLabel("Pulse");
 
     private final int closeButtonX;
     private final int closeButtonY;
@@ -72,6 +63,14 @@ public class WorkoutReportPage
     public boolean isOpenedNow() {
         return isDisplayedNow(
                 caloriesLabel
+        );
+    }
+
+    private static By metricLabel(String text) {
+        return AppiumBy.iOSNsPredicateString(
+                "name == '" + text + "'"
+                        + " OR label == '" + text + "'"
+                        + " OR value == '" + text + "'"
         );
     }
 
