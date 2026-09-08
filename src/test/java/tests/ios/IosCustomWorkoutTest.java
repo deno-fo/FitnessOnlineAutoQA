@@ -185,8 +185,8 @@ public class IosCustomWorkoutTest
 
         assertTrue(
                 reportPage.hasActivityMetrics(),
-                "Calories, steps or pulse block "
-                        + "is missing."
+                () -> "Report metrics not visible after waiting: "
+                        + reportPage.getMissingActivityMetrics()
         );
 
         logTime("Metrics checked");

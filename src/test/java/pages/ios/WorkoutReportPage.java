@@ -5,9 +5,11 @@ import io.appium.java_client.ios.IOSDriver;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 
 public class WorkoutReportPage
@@ -42,6 +44,7 @@ public class WorkoutReportPage
 
     private final int closeButtonX;
     private final int closeButtonY;
+    private List<String> missingActivityMetrics = List.of("Calories", "Steps", "Pulse");
 
     public WorkoutReportPage(
             IOSDriver driver
@@ -136,9 +139,28 @@ public class WorkoutReportPage
     }
 
     public boolean hasActivityMetrics() {
-        return isDisplayedNow(caloriesLabel)
-                && isDisplayedNow(stepsLabel)
-                && isDisplayedNow(pulseLabel);
+        try {
+            return wait.until(currentDriver -> {
+                List<String> missing = new ArrayList<>();
+                if (!isDisplayedNow(caloriesLabel)) {
+                    missing.add("Calories");
+                }
+                if (!isDisplayedNow(stepsLabel)) {
+                    missing.add("Steps");
+                }
+                if (!isDisplayedNow(pulseLabel)) {
+                    missing.add("Pulse");
+                }
+                missingActivityMetrics = List.copyOf(missing);
+                return missing.isEmpty();
+            });
+        } catch (TimeoutException timeout) {
+            return false;
+        }
+    }
+
+    public List<String> getMissingActivityMetrics() {
+        return missingActivityMetrics;
     }
 
     public void close() {
