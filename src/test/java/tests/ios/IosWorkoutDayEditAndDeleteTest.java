@@ -62,6 +62,7 @@ public class IosWorkoutDayEditAndDeleteTest
     public void shouldEditAndDeleteWorkoutDay() {
         loginPage.openEmailAuthentication();
 
+        accountDeletionFlow.beforeCreatingTestAccount();
         registrationPage.registerMaleUser(
                 TestData.uniqueEmail(),
                 TestData.PASSWORD,

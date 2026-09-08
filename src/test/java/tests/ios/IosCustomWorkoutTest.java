@@ -28,7 +28,6 @@ public class IosCustomWorkoutTest
 
     private long testStartTime;
 
-    private boolean reportClosed;
 
     @BeforeEach
     public void createPagesAndFlows() {
@@ -36,7 +35,6 @@ public class IosCustomWorkoutTest
         testStartTime =
                 System.currentTimeMillis();
 
-        reportClosed = false;
 
         loginPage =
                 new LoginPage(driver);
@@ -75,6 +73,7 @@ public class IosCustomWorkoutTest
 
         logTime("Opened email authentication");
 
+        accountDeletionFlow.beforeCreatingTestAccount();
         registrationPage.registerMaleUser(
                 TestData.uniqueEmail(),
                 TestData.PASSWORD,
@@ -194,7 +193,6 @@ public class IosCustomWorkoutTest
 
         reportPage.close();
 
-        reportClosed = true;
 
         logTime("Report closed");
     }
@@ -206,12 +204,6 @@ public class IosCustomWorkoutTest
         }
 
         logTime("Cleanup started");
-
-        if (reportPage != null
-                && !reportClosed) {
-
-            reportPage.closeIfPresent();
-        }
 
         if (accountDeletionFlow != null
                 && accountDeletionFlow

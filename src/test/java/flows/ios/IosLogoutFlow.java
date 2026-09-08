@@ -9,6 +9,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import pages.ios.MainPage;
+import pages.ios.LoginPage;
 
 import java.time.Duration;
 import java.util.List;
@@ -45,6 +46,14 @@ public class IosLogoutFlow {
         logout.click();
 
         confirmLogout();
+    }
+
+    public void logOutAfterInterruptedScenario() {
+        if (new IosCleanupRecovery(driver).openAccountMenu()) {
+            scrollToLogout().click();
+            confirmLogout();
+        }
+        new LoginPage(driver).waitUntilSignedOut();
     }
 
     private WebElement scrollToLogout() {

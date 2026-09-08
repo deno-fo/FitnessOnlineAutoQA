@@ -121,6 +121,19 @@ public class LoginPage extends IosBasePage {
         );
     }
 
+    public boolean isSignedOutNow() {
+        return isDisplayedNow(emailAuthenticationButton)
+                || isDisplayedNow(welcomeSkipButton);
+    }
+
+    public boolean isEmailFormDisplayedNow() {
+        return (isDisplayedNow(AppiumBy.className("XCUIElementTypeSecureTextField"))
+                || isDisplayedNow(AppiumBy.className("XCUIElementTypeTextField")))
+                && (isDisplayedNow(AppiumBy.accessibilityId("Sign in"))
+                || isDisplayedNow(AppiumBy.accessibilityId("SIGN UP"))
+                || isDisplayedNow(forgotPasswordLink));
+    }
+
     /**
      * Returns from the email authentication form to the initial
      * authentication options screen. iOS exposes the header/back

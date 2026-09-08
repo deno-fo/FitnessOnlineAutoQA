@@ -21,7 +21,7 @@ public class IosRegisteredUserAuthenticationTest
     private MainPage mainPage;
     private IosLogoutFlow logoutFlow;
 
-    private boolean userLoggedIn;
+    private boolean registeredLoginAttempted;
 
     @BeforeEach
     public void createPages() {
@@ -31,13 +31,14 @@ public class IosRegisteredUserAuthenticationTest
         mainPage = new MainPage(driver);
         logoutFlow = new IosLogoutFlow(driver);
 
-        userLoggedIn = false;
+        registeredLoginAttempted = false;
     }
 
     @IosDeviceTest
     public void shouldSignInRegisteredUser() {
         loginPage.openEmailAuthentication();
 
+        registeredLoginAttempted = true;
         emailAuthPage.signIn(
                 TestData.REGISTERED_USER_EMAIL,
                 TestData.REGISTERED_USER_PASSWORD
@@ -51,7 +52,6 @@ public class IosRegisteredUserAuthenticationTest
                         + "main screen was not opened."
         );
 
-        userLoggedIn = true;
     }
 
     @IosDeviceTest
@@ -76,8 +76,9 @@ public class IosRegisteredUserAuthenticationTest
         if (emailAuthPage == null) {
             return;
         }
-        if (userLoggedIn) {
-            logoutFlow.logOut();
+        if (registeredLoginAttempted) {
+            emailAuthPage.dismissInvalidCredentialsMessageIfPresent();
+            logoutFlow.logOutAfterInterruptedScenario();
 
             assertTrue(
                     loginPage

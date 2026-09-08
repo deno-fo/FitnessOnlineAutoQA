@@ -42,8 +42,9 @@ public class IosGuestAccountCreationTest
 
     @IosDeviceTest
     public void shouldCreateGuestAccount() {
-        loginPage.enterGuestMode();
+        accountDeletionFlow.beforeCreatingTestAccount();
         guestSessionStarted = true;
+        loginPage.enterGuestMode();
 
         guestOnboardingFlow.complete();
 

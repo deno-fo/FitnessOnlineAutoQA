@@ -149,6 +149,7 @@ public class IosFeedPostLifecycleTest
     private void registerNewUser() {
         loginPage.openEmailAuthentication();
 
+        accountDeletionFlow.beforeCreatingTestAccount();
         registrationPage.registerMaleUser(
                 TestData.uniqueEmail(),
                 TestData.PASSWORD,

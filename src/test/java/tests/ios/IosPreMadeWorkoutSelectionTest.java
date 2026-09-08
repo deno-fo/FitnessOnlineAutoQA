@@ -47,6 +47,7 @@ public class IosPreMadeWorkoutSelectionTest
     public void shouldSelectPreMadeWorkoutForNewUser() {
         loginPage.openEmailAuthentication();
 
+        accountDeletionFlow.beforeCreatingTestAccount();
         emailRegistrationPage.registerMaleUser(
                 TestData.uniqueEmail(),
                 TestData.PASSWORD,

@@ -6,6 +6,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import pages.ios.LoginPage;
 import pages.ios.MainPage;
 import org.openqa.selenium.Rectangle;
 import org.openqa.selenium.Dimension;
@@ -18,7 +19,7 @@ public class IosAccountDeletionFlow {
 
     private final IOSDriver driver;
     private final WebDriverWait wait;
-    private final MainPage mainPage;
+    private boolean testAccountCreationStarted;
 
     private final By settingsItem =
             AppiumBy.accessibilityId("Settings");
@@ -42,7 +43,6 @@ public class IosAccountDeletionFlow {
                 driver,
                 Duration.ofSeconds(10)
         );
-        this.mainPage = new MainPage(driver);
     }
 
     private void tapFirstDeleteButton() {
@@ -128,7 +128,10 @@ public class IosAccountDeletionFlow {
     }
 
     public boolean deleteAccountIfPossible() {
-        if (!mainPage.openMoreIfAvailable()) {
+        if (!testAccountCreationStarted) {
+            return false;
+        }
+        if (!new IosCleanupRecovery(driver).openAccountMenu()) {
             return false;
         }
 
@@ -147,6 +150,20 @@ public class IosAccountDeletionFlow {
 
         confirmFinalDeletion();
 
+        new LoginPage(driver).waitUntilSignedOut();
+        testAccountCreationStarted = false;
+
         return true;
+    }
+
+    public void beforeCreatingTestAccount() {
+        LoginPage login = new LoginPage(driver);
+        if (new MainPage(driver).isOpenedNow()) {
+            throw new IllegalStateException("Refusing to arm account deletion: "
+                    + "test account creation must start from authentication.");
+        }
+        wait.withMessage("Account creation did not reach an authentication screen")
+                .until(ignored -> login.isSignedOutNow() || login.isEmailFormDisplayedNow());
+        testAccountCreationStarted = true;
     }
 }
