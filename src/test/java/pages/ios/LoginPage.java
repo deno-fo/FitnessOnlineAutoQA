@@ -4,8 +4,13 @@ import io.appium.java_client.AppiumBy;
 import io.appium.java_client.ios.IOSDriver;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
+import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.Duration;
 import java.util.Map;
 
 public class LoginPage extends IosBasePage {
@@ -44,6 +49,13 @@ public class LoginPage extends IosBasePage {
             AppiumBy.iOSNsPredicateString(
                     "type == 'XCUIElementTypeStaticText' "
                             + "AND name == 'Forgot your password?'"
+            );
+
+    private final By savePasswordNotNowButton =
+            AppiumBy.iOSNsPredicateString(
+                    "type == 'XCUIElementTypeButton' "
+                            + "AND (name == 'Not Now' "
+                            + "OR label == 'Not Now')"
             );
 
     public LoginPage(IOSDriver driver) {
@@ -139,6 +151,43 @@ public class LoginPage extends IosBasePage {
                         || isDisplayedNow(welcomeSkipButton)
                         || isDisplayedNow(guestModeButton)
         );
+
+        dismissSavePasswordPromptIfPresent(
+                Duration.ofSeconds(5)
+        );
+    }
+
+    private void dismissSavePasswordPromptIfPresent(
+            Duration timeout
+    ) {
+        WebDriverWait promptWait =
+                new WebDriverWait(driver, timeout);
+
+        promptWait.pollingEvery(
+                Duration.ofMillis(200)
+        );
+
+        try {
+            promptWait.until(currentDriver -> {
+                try {
+                    WebElement button =
+                            findVisibleElementNow(
+                                    savePasswordNotNowButton
+                            );
+
+                    if (button == null) {
+                        return false;
+                    }
+
+                    button.click();
+                    return true;
+                } catch (StaleElementReferenceException ignored) {
+                    return false;
+                }
+            });
+        } catch (TimeoutException ignored) {
+            // The password manager prompt is optional.
+        }
     }
 
     private void swipeBack() {
@@ -153,7 +202,7 @@ public class LoginPage extends IosBasePage {
         driver.executeScript(
                 "mobile: dragFromToForDuration",
                 Map.of(
-                        "duration", 0.35,
+                        "duration", 0.12,
                         "fromX", 5,
                         "fromY", y,
                         "toX", screenSize.getWidth() - 5,
