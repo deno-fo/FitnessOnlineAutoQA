@@ -11,7 +11,7 @@ import javax.xml.xpath.XPathFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class IosPasswordManagerPromptTest {
+class PasswordManagerPromptLocatorTest {
 
     @Test
     void findsNotNowOnlyInsideSavePasswordSheet() throws Exception {
