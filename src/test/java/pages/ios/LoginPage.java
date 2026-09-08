@@ -140,17 +140,20 @@ public class LoginPage extends IosBasePage {
 
         swipeBack();
 
-        wait.until(currentDriver ->
-                !isDisplayedNow(forgotPasswordLink)
-        );
+        wait.until(currentDriver -> {
+            dismissSavePasswordPromptIfPresentNow();
+            return !isDisplayedNow(forgotPasswordLink);
+        });
 
+        dismissSavePasswordPromptIfPresentNow();
         swipeBack();
 
-        wait.until(currentDriver ->
-                isDisplayedNow(emailAuthenticationButton)
-                        || isDisplayedNow(welcomeSkipButton)
-                        || isDisplayedNow(guestModeButton)
-        );
+        wait.until(currentDriver -> {
+            dismissSavePasswordPromptIfPresentNow();
+            return isDisplayedNow(emailAuthenticationButton)
+                    || isDisplayedNow(welcomeSkipButton)
+                    || isDisplayedNow(guestModeButton);
+        });
 
         dismissSavePasswordPromptIfPresent(
                 Duration.ofSeconds(5)
@@ -168,25 +171,29 @@ public class LoginPage extends IosBasePage {
         );
 
         try {
-            promptWait.until(currentDriver -> {
-                try {
-                    WebElement button =
-                            findVisibleElementNow(
-                                    savePasswordNotNowButton
-                            );
-
-                    if (button == null) {
-                        return false;
-                    }
-
-                    button.click();
-                    return true;
-                } catch (StaleElementReferenceException ignored) {
-                    return false;
-                }
+        promptWait.until(currentDriver -> {
+                return dismissSavePasswordPromptIfPresentNow();
             });
         } catch (TimeoutException ignored) {
             // The password manager prompt is optional.
+        }
+    }
+
+    private boolean dismissSavePasswordPromptIfPresentNow() {
+        try {
+            WebElement button =
+                    findVisibleElementNow(
+                            savePasswordNotNowButton
+                    );
+
+            if (button == null) {
+                return false;
+            }
+
+            button.click();
+            return true;
+        } catch (StaleElementReferenceException ignored) {
+            return false;
         }
     }
 
