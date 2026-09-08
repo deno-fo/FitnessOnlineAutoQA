@@ -40,11 +40,16 @@ Appium-автотесты мобильного приложения FitnessOnlin
 можно запустить без телефонов и сервера Appium:
 
 ```bash
-./mvnw test -Dskip.mobile.tests=false -Dtest=FeedPostLocatorTest,DeviceQuarantineTest
+./mvnw test -Dskip.mobile.tests=false \
+  -Dtest=FeedPostLocatorTest,DeviceQuarantineTest,CleanupRecoveryTest,PasswordManagerPromptLocatorTest
 ```
 
 Эти проверки не заменяют мобильный прогон: Android-локаторы проверяются на тестовом
 XML-дереве, а исключение устройства — через JUnit без создания Appium-сессии.
+
+Те же быстрые проверки запускаются автоматически в GitHub Actions для каждого
+push и pull request. Workflow не требует телефона или Appium-сервера; реальные
+мобильные прогоны запускаются командами из платформенных инструкций.
 
 ## Архитектура и технические особенности
 - **Кроссплатформенная автоматизация:** тесты запускаются на реальных Android- и iOS-устройствах.

@@ -1,0 +1,28 @@
+name: Unit checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    name: Non-device tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Run non-device tests
+        run: ./mvnw test -Dskip.mobile.tests=false -Dtest=FeedPostLocatorTest,DeviceQuarantineTest,CleanupRecoveryTest,PasswordManagerPromptLocatorTest
