@@ -5,11 +5,9 @@ import io.appium.java_client.ios.IOSDriver;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.StaleElementReferenceException;
-import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 
 public class WorkoutReportPage
@@ -27,15 +25,23 @@ public class WorkoutReportPage
                     "name == '100%'"
             );
 
-    private final By caloriesLabel = metricLabel("Calories");
+    private final By caloriesLabel =
+            AppiumBy.accessibilityId(
+                    "Calories"
+            );
 
-    private final By stepsLabel = metricLabel("Steps");
+    private final By stepsLabel =
+            AppiumBy.accessibilityId(
+                    "Steps"
+            );
 
-    private final By pulseLabel = metricLabel("Pulse");
+    private final By pulseLabel =
+            AppiumBy.accessibilityId(
+                    "Pulse"
+            );
 
     private final int closeButtonX;
     private final int closeButtonY;
-    private List<String> missingActivityMetrics = List.of("Calories", "Steps", "Pulse");
 
     public WorkoutReportPage(
             IOSDriver driver
@@ -63,14 +69,6 @@ public class WorkoutReportPage
     public boolean isOpenedNow() {
         return isDisplayedNow(
                 caloriesLabel
-        );
-    }
-
-    private static By metricLabel(String text) {
-        return AppiumBy.iOSNsPredicateString(
-                "name == '" + text + "'"
-                        + " OR label == '" + text + "'"
-                        + " OR value == '" + text + "'"
         );
     }
 
@@ -138,38 +136,9 @@ public class WorkoutReportPage
     }
 
     public boolean hasActivityMetrics() {
-        try {
-            return wait.until(currentDriver -> {
-                List<String> missing = new ArrayList<>();
-                if (!isMetricAvailable(caloriesLabel)) {
-                    missing.add("Calories");
-                }
-                if (!isMetricAvailable(stepsLabel)) {
-                    missing.add("Steps");
-                }
-                if (!isMetricAvailable(pulseLabel)) {
-                    missing.add("Pulse");
-                }
-                missingActivityMetrics = List.copyOf(missing);
-                return missing.isEmpty();
-            });
-        } catch (TimeoutException timeout) {
-            return false;
-        }
-    }
-
-    public List<String> getMissingActivityMetrics() {
-        return missingActivityMetrics;
-    }
-
-    private boolean isMetricAvailable(By locator) {
-        /*
-         * iOS may report a report label as present in the accessibility
-         * tree while it is just below the current viewport. The activity
-         * block itself is still rendered, so visibility alone is too strict
-         * for this assertion.
-         */
-        return isDisplayedNow(locator) || isPresentNow(locator);
+        return isDisplayedNow(caloriesLabel)
+                && isDisplayedNow(stepsLabel)
+                && isDisplayedNow(pulseLabel);
     }
 
     public void close() {

@@ -6,7 +6,6 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.remote.Command;
 import org.openqa.selenium.remote.HttpCommandExecutor;
 import org.openqa.selenium.remote.Response;
-import pages.ios.WorkoutReportPage;
 
 import java.lang.reflect.Proxy;
 import java.net.URI;
@@ -17,23 +16,6 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CleanupRecoveryTest {
-    @Test
-    void reportWaitsForDelayedActivityMetric() throws Exception {
-        FakeDriver driver = new FakeDriver("metrics delayed");
-        WorkoutReportPage report = new WorkoutReportPage(driver);
-        assertTrue(report.hasActivityMetrics());
-        assertTrue(driver.pulseChecks > 1);
-        assertTrue(report.getMissingActivityMetrics().isEmpty());
-    }
-
-    @Test
-    void reportDoesNotAcceptPermanentlyMissingMetric() throws Exception {
-        FakeDriver driver = new FakeDriver("metrics missing");
-        WorkoutReportPage report = new WorkoutReportPage(driver);
-        assertFalse(report.hasActivityMetrics());
-        assertEquals(List.of("Pulse"), report.getMissingActivityMetrics());
-    }
-
     @Test
     void signedOutAccountNeedsNoDeletionOrRestart() throws Exception {
         FakeDriver driver = new FakeDriver("login");
@@ -88,7 +70,6 @@ class CleanupRecoveryTest {
 
     private static final class FakeDriver extends IOSDriver {
         private String screen;
-        private int pulseChecks;
         private final List<String> actions = new ArrayList<>();
 
         FakeDriver(String screen) throws Exception {
@@ -119,15 +100,7 @@ class CleanupRecoveryTest {
         @Override
         public List<WebElement> findElements(By by) {
             String locator = by.toString();
-            if (screen.startsWith("metrics") && locator.contains("Pulse")) {
-                pulseChecks++;
-            }
             String label = switch (screen) {
-                case "metrics delayed", "metrics missing" ->
-                        locator.contains("Calories") ? "Calories"
-                        : locator.contains("Steps") ? "Steps"
-                        : locator.contains("Pulse")
-                        && screen.equals("metrics delayed") && pulseChecks > 1 ? "Pulse" : null;
                 case "login" -> locator.contains("Sign in/Sign up with email") ? "login" : null;
                 case "form" -> locator.contains("XCUIElementTypeSecureTextField")
                         || locator.equals("AppiumBy.accessibilityId: Sign in") ? "form" : null;
@@ -137,7 +110,7 @@ class CleanupRecoveryTest {
                 case "more" -> locator.equals("AppiumBy.accessibilityId: Log out") ? "Log out"
                         : locator.equals("AppiumBy.accessibilityId: Settings") ? "Settings" : null;
                 case "confirm" -> locator.contains("name == 'Logout'") ? "Logout" : null;
-                case "report" -> locator.contains("Calories") ? "Calories" : null;
+                case "report" -> locator.equals("AppiumBy.accessibilityId: Calories") ? "Calories" : null;
                 case "settings" -> locator.equals("AppiumBy.accessibilityId: Delete account") ? "Delete account" : null;
                 case "delete" -> locator.contains("name == 'DELETE'") ? "DELETE" : null;
                 default -> null;
