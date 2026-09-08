@@ -10,7 +10,7 @@ import java.util.function.BooleanSupplier;
 public final class AndroidSystemDialogHandler {
 
     private static final Duration TRANSITION_TIMEOUT =
-            Duration.ofSeconds(15);
+            Duration.ofSeconds(20);
 
     private static final Duration POLLING_INTERVAL =
             Duration.ofMillis(200);

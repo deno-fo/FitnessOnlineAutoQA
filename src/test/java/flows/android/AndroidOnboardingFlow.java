@@ -47,10 +47,18 @@ public final class AndroidOnboardingFlow {
 
     public void completeGuestWithDefaultUserData() {
         systemDialogHandler.waitUntil(
-                genderSelectionPage::isReady
+                () -> genderSelectionPage.isReady()
+                        || bodyParametersPage.isReady()
         );
 
-        genderSelectionPage.selectMale();
+        /*
+         * When Health Connect access is denied, some Android builds resume
+         * guest onboarding on the body-parameters screen and skip gender
+         * selection. Continue from whichever onboarding screen is ready.
+         */
+        if (genderSelectionPage.isReady()) {
+            genderSelectionPage.selectMale();
+        }
 
         systemDialogHandler.waitUntil(
                 bodyParametersPage::isReady
