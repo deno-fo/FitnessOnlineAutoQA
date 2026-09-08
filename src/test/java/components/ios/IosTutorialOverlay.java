@@ -27,15 +27,6 @@ public class IosTutorialOverlay {
                     "XCUIElementTypePopover"
             );
 
-    private final By tutorialMarker =
-            AppiumBy.iOSNsPredicateString(
-                    "type == 'XCUIElementTypeImage' "
-                            + "AND ("
-                            + "name == 'tooltip_icon_info' "
-                            + "OR name == 'tooltip_icon_warning1'"
-                            + ")"
-            );
-
     public IosTutorialOverlay(
             IOSDriver driver
     ) {
@@ -174,36 +165,22 @@ public class IosTutorialOverlay {
 
     private WebElement findVisiblePopover() {
         try {
-            /*
-             * Сначала ищем один из уникальных
-             * значков подсказки приложения.
-             *
-             * Это не позволяет WDA по 30 секунд
-             * искать отсутствующий Popover
-             * во всём accessibility tree.
-             */
-            if (driver.findElements(
-                    tutorialMarker
-            ).isEmpty()) {
-                return null;
-            }
-
             List<WebElement> popovers =
                     driver.findElements(
                             tutorialPopover
                     );
 
-            if (popovers.isEmpty()) {
-                return null;
+            for (WebElement popover : popovers) {
+                try {
+                    if (popover.isDisplayed()) {
+                        return popover;
+                    }
+                } catch (StaleElementReferenceException ignored) {
+                    // The overlay was recreated; poll again.
+                }
             }
 
-            /*
-             * У SwiftUI значение displayed
-             * для Popover бывает ложным.
-             * Наличие уникального значка уже
-             * подтверждает открытую подсказку.
-             */
-            return popovers.get(0);
+            return null;
 
         } catch (
                 StaleElementReferenceException ignored

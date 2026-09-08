@@ -140,15 +140,22 @@ public class IosPostLoginFlow {
                 }
 
                 /*
+                 * The first post-login run may show a blocking
+                 * tutorial popover. Dismiss it before checking the
+                 * destination screen; otherwise the popover can hide
+                 * the very locator used as the completion condition.
+                 */
+                if (tutorialOverlay.isDisplayed()) {
+                    tutorialOverlay.dismissIfPresent();
+                    return false;
+                }
+
+                /*
                  * Главный экран проверяем только
                  * после обработки разрешений.
                  */
                 if (completionCondition
                         .getAsBoolean()) {
-
-                    tutorialOverlay
-                            .dismissIfPresent();
-
                     return true;
                 }
 
