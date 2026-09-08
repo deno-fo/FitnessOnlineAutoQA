@@ -21,13 +21,21 @@ public class LoginPage extends IosBasePage {
 
     private final By emailAuthenticationButton =
             AppiumBy.iOSNsPredicateString(
-                    "type == 'XCUIElementTypeStaticText' "
-                            + "AND name == "
-                            + "'Sign in/Sign up with email'"
+                    "(type == 'XCUIElementTypeStaticText' "
+                            + "OR type == 'XCUIElementTypeButton') "
+                            + "AND (name == "
+                            + "'Sign in/Sign up with email' "
+                            + "OR label == "
+                            + "'Sign in/Sign up with email')"
             );
 
     private final By emailAuthenticationForm =
-            AppiumBy.accessibilityId("Sign in");
+            AppiumBy.iOSNsPredicateString(
+                    "type == 'XCUIElementTypeTextField' "
+                            + "OR type == "
+                            + "'XCUIElementTypeSecureTextField' "
+                            + "OR name == 'Sign in'"
+            );
 
     public LoginPage(IOSDriver driver) {
         super(driver);
