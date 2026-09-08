@@ -1,13 +1,11 @@
 package flows.ios;
 
 import components.ios.IosTutorialOverlay;
-import io.appium.java_client.AppiumBy;
+import components.ios.IosPasswordManagerPrompt;
 import io.appium.java_client.ios.IOSDriver;
 import org.openqa.selenium.Alert;
-import org.openqa.selenium.By;
 import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.StaleElementReferenceException;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import pages.ios.HealthAccessPage;
 import pages.ios.MainPage;
@@ -32,12 +30,8 @@ public class IosPostLoginFlow {
 
     private final MainPage mainPage;
 
-    private final By savePasswordNotNowButton =
-            AppiumBy.iOSNsPredicateString(
-                    "name == 'Not Now' "
-                            + "OR label == 'Not Now' "
-                            + "OR value == 'Not Now'"
-            );
+    private final IosPasswordManagerPrompt
+            passwordManagerPrompt;
 
     private boolean healthGrantRequested;
     private boolean notificationGrantRequested;
@@ -64,6 +58,9 @@ public class IosPostLoginFlow {
 
         this.tutorialOverlay =
                 new IosTutorialOverlay(driver);
+
+        this.passwordManagerPrompt =
+                new IosPasswordManagerPrompt(driver);
 
         this.mainPage =
                 new MainPage(driver);
@@ -188,15 +185,7 @@ public class IosPostLoginFlow {
     }
 
     private boolean dismissSavePasswordPromptIfPresent() {
-        for (WebElement button :
-                driver.findElements(savePasswordNotNowButton)) {
-            if (button.isDisplayed()) {
-                button.click();
-                return true;
-            }
-        }
-
-        return false;
+        return passwordManagerPrompt.dismissIfPresent();
     }
 
     private boolean acceptSystemAlertIfPresent() {

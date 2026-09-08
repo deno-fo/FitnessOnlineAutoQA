@@ -1,14 +1,11 @@
 package pages.ios;
 
+import components.ios.IosPasswordManagerPrompt;
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.ios.IOSDriver;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
-import org.openqa.selenium.StaleElementReferenceException;
-import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 import java.util.Map;
@@ -51,15 +48,13 @@ public class LoginPage extends IosBasePage {
                             + "AND name == 'Forgot your password?'"
             );
 
-    private final By savePasswordNotNowButton =
-            AppiumBy.iOSNsPredicateString(
-                    "name == 'Not Now' "
-                            + "OR label == 'Not Now' "
-                            + "OR value == 'Not Now'"
-            );
+    private final IosPasswordManagerPrompt
+            passwordManagerPrompt;
 
     public LoginPage(IOSDriver driver) {
         super(driver);
+        passwordManagerPrompt =
+                new IosPasswordManagerPrompt(driver);
     }
 
     public void enterGuestMode() {
@@ -141,21 +136,21 @@ public class LoginPage extends IosBasePage {
         swipeBack();
 
         wait.until(currentDriver -> {
-            dismissSavePasswordPromptIfPresentNow();
+            passwordManagerPrompt.dismissIfPresent();
             return !isDisplayedNow(forgotPasswordLink);
         });
 
-        dismissSavePasswordPromptIfPresentNow();
+        passwordManagerPrompt.dismissIfPresent();
         swipeBack();
 
         wait.until(currentDriver -> {
-            dismissSavePasswordPromptIfPresentNow();
+            passwordManagerPrompt.dismissIfPresent();
             return isDisplayedNow(emailAuthenticationButton)
                     || isDisplayedNow(welcomeSkipButton)
                     || isDisplayedNow(guestModeButton);
         });
 
-        dismissSavePasswordPromptIfPresent(
+        passwordManagerPrompt.waitAndDismissIfPresent(
                 Duration.ofSeconds(5)
         );
     }
@@ -163,38 +158,8 @@ public class LoginPage extends IosBasePage {
     public void dismissSavePasswordPromptIfPresent(
             Duration timeout
     ) {
-        WebDriverWait promptWait =
-                new WebDriverWait(driver, timeout);
-
-        promptWait.pollingEvery(
-                Duration.ofMillis(200)
-        );
-
-        try {
-        promptWait.until(currentDriver -> {
-                return dismissSavePasswordPromptIfPresentNow();
-            });
-        } catch (TimeoutException ignored) {
-            // The password manager prompt is optional.
-        }
-    }
-
-    private boolean dismissSavePasswordPromptIfPresentNow() {
-        try {
-            WebElement button =
-                    findVisibleElementNow(
-                            savePasswordNotNowButton
-                    );
-
-            if (button == null) {
-                return false;
-            }
-
-            button.click();
-            return true;
-        } catch (StaleElementReferenceException ignored) {
-            return false;
-        }
+        passwordManagerPrompt
+                .waitAndDismissIfPresent(timeout);
     }
 
     private void swipeBack() {

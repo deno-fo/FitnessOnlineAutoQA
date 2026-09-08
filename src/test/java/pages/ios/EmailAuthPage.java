@@ -1,5 +1,6 @@
 package pages.ios;
 
+import components.ios.IosPasswordManagerPrompt;
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.ios.IOSDriver;
 import org.openqa.selenium.By;
@@ -40,12 +41,8 @@ public class EmailAuthPage extends IosBasePage {
     private final By errorConfirmationButton =
             AppiumBy.accessibilityId("OK");
 
-    private final By savePasswordNotNowButton =
-            AppiumBy.iOSNsPredicateString(
-                    "name == 'Not Now' "
-                            + "OR label == 'Not Now' "
-                            + "OR value == 'Not Now'"
-            );
+    private final IosPasswordManagerPrompt
+            passwordManagerPrompt;
 
     private final By forgotPasswordLink =
             AppiumBy.iOSNsPredicateString(
@@ -55,6 +52,8 @@ public class EmailAuthPage extends IosBasePage {
 
     public EmailAuthPage(IOSDriver driver) {
         super(driver);
+        passwordManagerPrompt =
+                new IosPasswordManagerPrompt(driver);
     }
 
     public void selectSignInTab() {
@@ -157,13 +156,6 @@ public class EmailAuthPage extends IosBasePage {
     }
 
     public void dismissSavePasswordPromptIfPresent() {
-        WebElement button =
-                findVisibleElementNow(
-                        savePasswordNotNowButton
-                );
-
-        if (button != null) {
-            button.click();
-        }
+        passwordManagerPrompt.dismissIfPresent();
     }
 }
