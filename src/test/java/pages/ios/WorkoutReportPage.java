@@ -142,13 +142,13 @@ public class WorkoutReportPage
         try {
             return wait.until(currentDriver -> {
                 List<String> missing = new ArrayList<>();
-                if (!isDisplayedNow(caloriesLabel)) {
+                if (!isMetricAvailable(caloriesLabel)) {
                     missing.add("Calories");
                 }
-                if (!isDisplayedNow(stepsLabel)) {
+                if (!isMetricAvailable(stepsLabel)) {
                     missing.add("Steps");
                 }
-                if (!isDisplayedNow(pulseLabel)) {
+                if (!isMetricAvailable(pulseLabel)) {
                     missing.add("Pulse");
                 }
                 missingActivityMetrics = List.copyOf(missing);
@@ -161,6 +161,16 @@ public class WorkoutReportPage
 
     public List<String> getMissingActivityMetrics() {
         return missingActivityMetrics;
+    }
+
+    private boolean isMetricAvailable(By locator) {
+        /*
+         * iOS may report a report label as present in the accessibility
+         * tree while it is just below the current viewport. The activity
+         * block itself is still rendered, so visibility alone is too strict
+         * for this assertion.
+         */
+        return isDisplayedNow(locator) || isPresentNow(locator);
     }
 
     public void close() {
