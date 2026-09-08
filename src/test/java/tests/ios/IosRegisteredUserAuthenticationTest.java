@@ -91,5 +91,8 @@ public class IosRegisteredUserAuthenticationTest
 
         emailAuthPage
                 .dismissInvalidCredentialsMessageIfPresent();
+
+        loginPage
+                .returnToAuthenticationOptionsIfNeeded();
     }
 }

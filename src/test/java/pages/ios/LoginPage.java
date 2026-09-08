@@ -5,6 +5,8 @@ import io.appium.java_client.ios.IOSDriver;
 import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
+import java.util.Map;
+
 public class LoginPage extends IosBasePage {
 
     private final By welcomeSkipButton =
@@ -35,6 +37,12 @@ public class LoginPage extends IosBasePage {
                             + "OR type == "
                             + "'XCUIElementTypeSecureTextField' "
                             + "OR name == 'Sign in'"
+            );
+
+    private final By forgotPasswordLink =
+            AppiumBy.iOSNsPredicateString(
+                    "type == 'XCUIElementTypeStaticText' "
+                            + "AND name == 'Forgot your password?'"
             );
 
     public LoginPage(IOSDriver driver) {
@@ -101,8 +109,41 @@ public class LoginPage extends IosBasePage {
         wait.until(currentDriver ->
                 !isDisplayedNow(alert)
                         && (isDisplayedNow(emailAuthenticationButton)
-                        || isDisplayedNow(emailAuthenticationForm)
                         || isDisplayedNow(welcomeSkipButton))
+        );
+    }
+
+    /**
+     * Returns from the email authentication form to the initial
+     * authentication options screen. iOS exposes the header/back
+     * control as one unnamed container, so the native back gesture
+     * is the stable interaction here.
+     */
+    public void returnToAuthenticationOptionsIfNeeded() {
+        if (!isDisplayedNow(emailAuthenticationForm)
+                && !isDisplayedNow(forgotPasswordLink)) {
+            return;
+        }
+
+        swipeBack();
+
+        wait.until(currentDriver ->
+                !isDisplayedNow(forgotPasswordLink)
+        );
+
+        swipeBack();
+
+        wait.until(currentDriver ->
+                isDisplayedNow(emailAuthenticationButton)
+                        || isDisplayedNow(welcomeSkipButton)
+                        || isDisplayedNow(guestModeButton)
+        );
+    }
+
+    private void swipeBack() {
+        driver.executeScript(
+                "mobile: swipe",
+                Map.of("direction", "right")
         );
     }
 
