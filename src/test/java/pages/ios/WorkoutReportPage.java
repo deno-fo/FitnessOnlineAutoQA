@@ -37,7 +37,7 @@ public class WorkoutReportPage
 
     private final By pulseLabel =
             AppiumBy.accessibilityId(
-                    "Pulse"
+                    "Avg. BPM"
             );
 
     private final int closeButtonX;
