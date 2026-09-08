@@ -9,6 +9,7 @@ import utils.AppiumConfig;
 import utils.IosConfig;
 import utils.IosDevice;
 import utils.IosDeviceContext;
+import pages.ios.LoginPage;
 
 import java.io.IOException;
 import java.net.URL;
@@ -103,12 +104,23 @@ public abstract class BaseIosTest {
         }
 
         try {
-            driver.quit();
-        } catch (WebDriverException ignored) {
-            // Сессия могла уже завершиться
-            // из-за ошибки WDA/Appium.
+            // Subclass cleanup runs first. Confirm it actually restored a signed-out screen.
+            new LoginPage(driver).waitUntilSignedOut();
+        } catch (RuntimeException exception) {
+            String reason = "Cleanup could not confirm the signed-out screen";
+            IosDeviceContext.markCleanupFailed(reason);
+            throw new IllegalStateException(
+                    reason + "; remaining tests on this iPhone will be skipped.",
+                    exception
+            );
         } finally {
-            driver = null;
+            try {
+                driver.quit();
+            } catch (WebDriverException ignored) {
+                // The session may already have ended after a WDA/Appium failure.
+            } finally {
+                driver = null;
+            }
         }
     }
 }

@@ -73,6 +73,9 @@ public class IosRegisteredUserAuthenticationTest
 
     @AfterEach
     public void restoreAuthenticationState() {
+        if (emailAuthPage == null) {
+            return;
+        }
         if (userLoggedIn) {
             logoutFlow.logOut();
 

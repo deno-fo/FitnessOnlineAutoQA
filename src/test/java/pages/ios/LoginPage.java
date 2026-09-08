@@ -88,6 +88,16 @@ public class LoginPage extends IosBasePage {
         ).isDisplayed();
     }
 
+    public void waitUntilSignedOut() {
+        By alert = AppiumBy.className("XCUIElementTypeAlert");
+        wait.until(currentDriver ->
+                !isDisplayedNow(alert)
+                        && (isDisplayedNow(emailAuthenticationButton)
+                        || isDisplayedNow(emailAuthenticationForm)
+                        || isDisplayedNow(welcomeSkipButton))
+        );
+    }
+
     private boolean isPresent(By locator) {
         return !driver.findElements(locator).isEmpty();
     }

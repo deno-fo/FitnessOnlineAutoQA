@@ -201,6 +201,9 @@ public class IosCustomWorkoutTest
 
     @AfterEach
     public void cleanUpCreatedAccount() {
+        if (driver == null) {
+            return;
+        }
 
         logTime("Cleanup started");
 

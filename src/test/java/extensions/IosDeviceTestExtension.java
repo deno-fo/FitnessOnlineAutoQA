@@ -12,6 +12,8 @@ import utils.IosDevice;
 import utils.IosDeviceContext;
 import utils.IosDeviceUtils;
 import utils.IosTestResults;
+import utils.IosDeviceQuarantine;
+import org.opentest4j.TestAbortedException;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -51,6 +53,13 @@ public final class IosDeviceTestExtension
     ) {
         List<IosDevice> devices = loadDevices();
         IosTestResults results = getResults(context);
+        IosDeviceQuarantine quarantine = context.getRoot()
+                .getStore(RESULTS_NAMESPACE)
+                .getOrComputeIfAbsent(
+                        IosDeviceQuarantine.class,
+                        ignored -> new IosDeviceQuarantine(),
+                        IosDeviceQuarantine.class
+                );
 
         devices.forEach(results::registerDevice);
 
@@ -58,7 +67,8 @@ public final class IosDeviceTestExtension
                 .map(device ->
                         createInvocationContext(
                                 device,
-                                results
+                                results,
+                                quarantine
                         )
                 );
     }
@@ -66,7 +76,8 @@ public final class IosDeviceTestExtension
     private TestTemplateInvocationContext
     createInvocationContext(
             IosDevice device,
-            IosTestResults results
+            IosTestResults results,
+            IosDeviceQuarantine quarantine
     ) {
         return new TestTemplateInvocationContext() {
 
@@ -82,7 +93,8 @@ public final class IosDeviceTestExtension
                 return List.of(
                         new IosDeviceInvocationExtension(
                                 device,
-                                results
+                                results,
+                                quarantine
                         )
                 );
             }
@@ -148,7 +160,7 @@ public final class IosDeviceTestExtension
                 );
     }
 
-    private static final class
+    static final class
     IosDeviceInvocationExtension
             implements BeforeEachCallback,
             AfterEachCallback,
@@ -163,16 +175,19 @@ public final class IosDeviceTestExtension
         private final IosDevice device;
         private final IosTestResults results;
         private final ReentrantLock deviceLock;
+        private final IosDeviceQuarantine quarantine;
 
         private long startedAtNanos;
         private boolean lockAcquired;
 
-        private IosDeviceInvocationExtension(
+        IosDeviceInvocationExtension(
                 IosDevice device,
-                IosTestResults results
+                IosTestResults results,
+                IosDeviceQuarantine quarantine
         ) {
             this.device = device;
             this.results = results;
+            this.quarantine = quarantine;
             this.deviceLock = DEVICE_LOCKS.computeIfAbsent(
                     device.udid(),
                     ignored -> new ReentrantLock(true)
@@ -186,6 +201,18 @@ public final class IosDeviceTestExtension
             deviceLock.lockInterruptibly();
             lockAcquired = true;
 
+            // Check under the device lock: the preceding test may just have failed cleanup.
+            String reason = quarantine.reason(device.udid());
+            if (reason != null) {
+                lockAcquired = false;
+                deviceLock.unlock();
+                throw new TestAbortedException(
+                        "iOS device " + device.displayName()
+                                + " is excluded from this run: " + reason
+                                + ". Restore the signed-out state manually before a new run."
+                );
+            }
+
             IosDeviceContext.set(device);
             startedAtNanos = System.nanoTime();
         }
@@ -195,6 +222,10 @@ public final class IosDeviceTestExtension
                 ExtensionContext context
         ) {
             try {
+                String failure = IosDeviceContext.cleanupFailure();
+                if (lockAcquired && failure != null) {
+                    quarantine.block(device.udid(), getTestName(context) + ": " + failure);
+                }
                 IosDeviceContext.clear();
             } finally {
                 if (lockAcquired) {

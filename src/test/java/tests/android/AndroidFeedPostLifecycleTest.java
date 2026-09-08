@@ -75,37 +75,37 @@ public class AndroidFeedPostLifecycleTest
                 "Created feed post is not displayed."
         );
 
-        feedPostFlow.likeTopPost();
-        feedPage.waitUntilReactionCounts("1", "0");
+        feedPostFlow.likePost(postText);
+        feedPage.waitUntilReactionCounts(postText, "1", "0");
 
         assertEquals(
                 "1",
-                feedPage.getTopPostLikesCount(),
+                feedPage.getPostLikesCount(postText),
                 "Feed post likes count is wrong after liking."
         );
 
         assertEquals(
                 "0",
-                feedPage.getTopPostDislikesCount(),
+                feedPage.getPostDislikesCount(postText),
                 "Feed post dislikes count changed after liking."
         );
 
-        feedPostFlow.dislikeTopPost();
-        feedPage.waitUntilReactionCounts("0", "1");
+        feedPostFlow.dislikePost(postText);
+        feedPage.waitUntilReactionCounts(postText, "0", "1");
 
         assertEquals(
                 "0",
-                feedPage.getTopPostLikesCount(),
+                feedPage.getPostLikesCount(postText),
                 "Feed post like was not removed after disliking."
         );
 
         assertEquals(
                 "1",
-                feedPage.getTopPostDislikesCount(),
+                feedPage.getPostDislikesCount(postText),
                 "Feed post dislikes count is wrong after disliking."
         );
 
-        feedPostFlow.openTopPostComments();
+        feedPostFlow.openPostComments(postText);
         feedPostFlow.addComment(commentText);
 
         assertTrue(

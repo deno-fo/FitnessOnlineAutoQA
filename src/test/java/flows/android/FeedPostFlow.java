@@ -25,19 +25,19 @@ public class FeedPostFlow {
         feedPage.openCreatePost();
         newPostPage.publishTextPost(postText);
         feedPage.waitUntilReady();
-        feedPage.waitUntilTopPostReady(postText);
+        feedPage.waitUntilPostReady(postText);
     }
 
-    public void likeTopPost() {
-        feedPage.likeTopPost();
+    public void likePost(String postText) {
+        feedPage.likePost(postText);
     }
 
-    public void dislikeTopPost() {
-        feedPage.dislikeTopPost();
+    public void dislikePost(String postText) {
+        feedPage.dislikePost(postText);
     }
 
-    public void openTopPostComments() {
-        feedPage.openTopPostComments();
+    public void openPostComments(String postText) {
+        feedPage.openPostComments(postText);
         tutorialOverlay.dismissIfPresent();
         postDetailsPage.waitUntilOpened();
     }
