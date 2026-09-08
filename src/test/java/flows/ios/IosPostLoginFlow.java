@@ -34,9 +34,9 @@ public class IosPostLoginFlow {
 
     private final By savePasswordNotNowButton =
             AppiumBy.iOSNsPredicateString(
-                    "type == 'XCUIElementTypeButton' "
-                            + "AND (name == 'Not Now' "
-                            + "OR label == 'Not Now')"
+                    "name == 'Not Now' "
+                            + "OR label == 'Not Now' "
+                            + "OR value == 'Not Now'"
             );
 
     private boolean healthGrantRequested;

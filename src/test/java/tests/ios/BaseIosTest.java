@@ -13,6 +13,7 @@ import pages.ios.LoginPage;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.Duration;
 import java.util.Map;
 
 public abstract class BaseIosTest {
@@ -95,6 +96,12 @@ public abstract class BaseIosTest {
                         0.5
                 )
         );
+
+        // iOS Password AutoFill may show a blocking sheet on app launch.
+        new LoginPage(driver)
+                .dismissSavePasswordPromptIfPresent(
+                        Duration.ofSeconds(5)
+                );
     }
 
     @AfterEach
