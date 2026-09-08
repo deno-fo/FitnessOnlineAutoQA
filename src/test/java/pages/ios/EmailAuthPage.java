@@ -40,6 +40,13 @@ public class EmailAuthPage extends IosBasePage {
     private final By errorConfirmationButton =
             AppiumBy.accessibilityId("OK");
 
+    private final By savePasswordNotNowButton =
+            AppiumBy.iOSNsPredicateString(
+                    "type == 'XCUIElementTypeButton' "
+                            + "AND (name == 'Not Now' "
+                            + "OR label == 'Not Now')"
+            );
+
     private final By forgotPasswordLink =
             AppiumBy.iOSNsPredicateString(
                     "type == 'XCUIElementTypeStaticText' "
@@ -111,18 +118,23 @@ public class EmailAuthPage extends IosBasePage {
         selectSignInTab();
         enterEmail(email);
         enterPassword(password);
+        dismissSavePasswordPromptIfPresent();
         submitSignIn();
+        dismissSavePasswordPromptIfPresent();
     }
 
     public boolean isInvalidCredentialsMessageDisplayed() {
         return wait.until(
-                ExpectedConditions.visibilityOfElementLocated(
-                        invalidCredentialsMessage
-                )
-        ).isDisplayed();
+                currentDriver -> {
+                    dismissSavePasswordPromptIfPresent();
+                    return isDisplayedNow(invalidCredentialsMessage);
+                }
+        );
     }
 
     public void dismissInvalidCredentialsMessageIfPresent() {
+        dismissSavePasswordPromptIfPresent();
+
         if (driver.findElements(
                 invalidCredentialsMessage
         ).isEmpty()) {
@@ -139,6 +151,19 @@ public class EmailAuthPage extends IosBasePage {
                             errorConfirmationButton
                     )
             ).click();
+        }
+
+        dismissSavePasswordPromptIfPresent();
+    }
+
+    public void dismissSavePasswordPromptIfPresent() {
+        WebElement button =
+                findVisibleElementNow(
+                        savePasswordNotNowButton
+                );
+
+        if (button != null) {
+            button.click();
         }
     }
 }

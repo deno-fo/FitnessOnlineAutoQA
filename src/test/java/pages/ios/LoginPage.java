@@ -3,6 +3,7 @@ package pages.ios;
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.ios.IOSDriver;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.util.Map;
@@ -141,9 +142,23 @@ public class LoginPage extends IosBasePage {
     }
 
     private void swipeBack() {
+        Dimension screenSize =
+                driver.manage()
+                        .window()
+                        .getSize();
+
+        int y =
+                (int) (screenSize.getHeight() * 0.20);
+
         driver.executeScript(
-                "mobile: swipe",
-                Map.of("direction", "right")
+                "mobile: dragFromToForDuration",
+                Map.of(
+                        "duration", 0.35,
+                        "fromX", 5,
+                        "fromY", y,
+                        "toX", screenSize.getWidth() - 5,
+                        "toY", y
+                )
         );
     }
 

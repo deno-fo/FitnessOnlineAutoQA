@@ -1,10 +1,13 @@
 package flows.ios;
 
 import components.ios.IosTutorialOverlay;
+import io.appium.java_client.AppiumBy;
 import io.appium.java_client.ios.IOSDriver;
 import org.openqa.selenium.Alert;
+import org.openqa.selenium.By;
 import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import pages.ios.HealthAccessPage;
 import pages.ios.MainPage;
@@ -28,6 +31,13 @@ public class IosPostLoginFlow {
             tutorialOverlay;
 
     private final MainPage mainPage;
+
+    private final By savePasswordNotNowButton =
+            AppiumBy.iOSNsPredicateString(
+                    "type == 'XCUIElementTypeButton' "
+                            + "AND (name == 'Not Now' "
+                            + "OR label == 'Not Now')"
+            );
 
     private boolean healthGrantRequested;
     private boolean notificationGrantRequested;
@@ -79,6 +89,10 @@ public class IosPostLoginFlow {
 
         wait.until(currentDriver -> {
             try {
+                if (dismissSavePasswordPromptIfPresent()) {
+                    return false;
+                }
+
                 /*
                  * Системный alert уведомлений
                  * проверяем только после того,
@@ -171,6 +185,18 @@ public class IosPostLoginFlow {
                 return false;
             }
         });
+    }
+
+    private boolean dismissSavePasswordPromptIfPresent() {
+        for (WebElement button :
+                driver.findElements(savePasswordNotNowButton)) {
+            if (button.isDisplayed()) {
+                button.click();
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private boolean acceptSystemAlertIfPresent() {
