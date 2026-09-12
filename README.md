@@ -1,8 +1,10 @@
-# FitnessOnlineAutoQA
+# FitnessOnline Mobile Test Automation
 
 [![Unit checks](https://github.com/deno-fo/FitnessOnlineAutoQA/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/deno-fo/FitnessOnlineAutoQA/actions/workflows/unit-tests.yml)
 
 Appium-автотесты мобильного приложения FitnessOnline для реальных Android- и iOS-устройств.
+
+Проект демонстрирует кроссплатформенный фреймворк автоматизации мобильного приложения на Java: Page Object, Flow-слой, Appium, реальные устройства, параллельный запуск и восстановление после ошибок очистки.
 
 Проект демонстрирует полный цикл mobile QA automation: от настройки реального
 устройства и выдачи системных разрешений до проверки бизнес-сценария и очистки
